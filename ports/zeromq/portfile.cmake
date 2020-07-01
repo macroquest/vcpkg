@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO zeromq/libzmq
-    REF 8d34332ff2301607df0fc9971a2fbe903c0feb7c
-    SHA512 8b3a9b6c4e5236353672b6deb64c94ac79deb116962405f01fe36e2fd8ddc48ec65d88ffc06746ce2e13c93eaeb04e4ba73de8f9d6f2a57a73111765d5ba8ad7
+    REF 4dd504abebf3eb944d0554c36d490fb2bb742e4f
+    SHA512 cf0d81692744a66b1b318fc86d617e0c4dbd74801b34a9b526f1a475dda1e4b1b303ffcdb35f698e5c2bc796de358f8608c82dbc8d5ba8128ec01e1fd04537a5
     HEAD_REF master
 )
 
@@ -27,7 +27,7 @@ vcpkg_configure_cmake(
     PREFER_NINJA
     OPTIONS
         -DZMQ_BUILD_TESTS=OFF
-        -DPOLLER=select
+        -DPOLLER=epoll
         -DBUILD_STATIC=${BUILD_STATIC}
         -DBUILD_SHARED=${BUILD_SHARED}
         -DWITH_PERF_TOOL=OFF
