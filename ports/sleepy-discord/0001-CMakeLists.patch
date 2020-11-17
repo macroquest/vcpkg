@@ -1,0 +1,152 @@
+---
+ CMakeLists.txt | 81 +++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 50 insertions(+), 31 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cb18825..d3c2e48 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7,6 +7,7 @@ option(ONLY_SLEEPY_DISCORD           "Sleepy Discord but none of the dependencie
+ option(ENABLE_VOICE                  "Enable voice support"                                               OFF)
+ if (NOT ONLY_SLEEPY_DISCORD)
+ 	option(AUTO_DOWNLOAD_LIBRARY         "Automatically download sleepy discord standard config dependencies" ON )
++	option(USE_VCPKG_LIBS                "Use VCPKG for libraries"                                            OFF)
+ 	option(USE_CPR                       "Use CPR http library"                                               ON )
+ 	option(USE_WEBSOCKETPP               "Use websocketpp websockets library"                                 ON )
+ 	option(USE_UWEBSOCKETS               "Use uWebsockets websockets library"                                 OFF)
+@@ -18,6 +19,11 @@ endif()
+ #Define a variable to use to check if this file has been executed
+ set(SLEEPY_DISCORD_CMAKE ON)
+ 
++# AUTO_DOWNLOAD_LIBRARY and USE_VCPKG_LIBS are mutually exclusive
++if (AUTO_DOWNLOAD_LIBRARY AND USE_VCPKG_LIBS)
++	message(FATAL_ERROR "Can't auto download and use vcpkg libraries at the same time")
++endif()
++
+ #set variables based on other variables
+ if(BUILD_EXAMPLES)
+ 	set(SLEEPY_DISCORD_BUILD_EXAMPLES ON)
+@@ -122,6 +128,8 @@ if(AUTO_DOWNLOAD_LIBRARY)
+ 			TEST_COMMAND        ""
+ 		)
+ 	endif()
++elseif(USE_VCPKG_LIBS)
++	# nothing to do here.
+ else()
+ 	if(USE_CPR)
+ 		set(cpr_SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/cpr)
+@@ -154,54 +162,56 @@ if(USE_CPR)
+ 	set(CURL_STATICLIB ON CACHE BOOL "")
+ 	set(CURL_ZLIB OFF CACHE BOOL "")
+ 
+-	#set what ssl library to use for curl based on OS
+-	#this fixes
+-	if(NOT DEFINED CMAKE_USE_OPENSSL)
+-		if(WIN32)
+-			set(CMAKE_USE_WINSSL ON CACHE BOOL "")
+-			set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
+-		elseif(APPLE)
+-			set(CMAKE_USE_DARWINSSL ON CACHE BOOL "")
+-			set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
+-		elseif(UNIX)
+-			set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
++	if(NOT USE_VCPKG_LIBS)
++		#set what ssl library to use for curl based on OS
++		#this fixes
++		if(NOT DEFINED CMAKE_USE_OPENSSL)
++			if(WIN32)
++				set(CMAKE_USE_WINSSL ON CACHE BOOL "")
++				set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
++			elseif(APPLE)
++				set(CMAKE_USE_DARWINSSL ON CACHE BOOL "")
++				set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
++			elseif(UNIX)
++				set(CMAKE_USE_OPENSSL OFF CACHE BOOL "")
++			endif()
++		endif()
++		if(NOT DEFINED USE_SYSTEM_CURL AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
++			#using cmake to configure curl on linux has issues
++			#so use system curl
++			set(USE_SYSTEM_CURL ON CACHE BOOL "")
+ 		endif()
+-	endif()
+-	if(NOT DEFINED USE_SYSTEM_CURL AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+-		#using cmake to configure curl on linux has issues
+-		#so use system curl
+-		set(USE_SYSTEM_CURL ON CACHE BOOL "")
+-	endif()
+ 
+-	add_subdirectory(deps/cpr)
++		add_subdirectory(deps/cpr)
++	endif()
+ endif()
+ 
+-if(USE_WEBSOCKETPP)
+-	set(THREADS_PREFER_PTHREAD_FLAG ON)
+-	find_package(Threads REQUIRED)
+-	add_subdirectory(deps/websocketpp)
+-endif()
++	if(USE_WEBSOCKETPP AND NOT USE_VCPKG_LIBS)
++		set(THREADS_PREFER_PTHREAD_FLAG ON)
++		find_package(Threads REQUIRED)
++		add_subdirectory(deps/websocketpp)
++	endif()
+ 
+-if(USE_LIBOPUS)
+-	add_subdirectory(deps/opus)
+-endif()
++	if(USE_LIBOPUS AND NOT USE_VCPKG_LIBS)
++		add_subdirectory(deps/opus)
++	endif()
+ 
+ # Get Version Info
+-if(Git_FOUND)
++if(Git_FOUND AND NOT USE_VCPKG_LIBS)
+ 	execute_process(
+-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
++		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+ 		COMMAND ${GIT_EXECUTABLE} rev-list --count HEAD
+ 		OUTPUT_VARIABLE SLEEPY_DISCORD_VERSION_BUILD
+ 		OUTPUT_STRIP_TRAILING_WHITESPACE
+ 	)
+ 	execute_process(
+-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
++		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+ 		COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+ 		OUTPUT_VARIABLE SLEEPY_DISCORD_VERSION_BRANCH
+ 		OUTPUT_STRIP_TRAILING_WHITESPACE
+ 	)
+ 	execute_process(
+-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
++		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+ 		COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+ 		OUTPUT_VARIABLE SLEEPY_DISCORD_VERSION_HASH
+ 		OUTPUT_STRIP_TRAILING_WHITESPACE
+@@ -212,7 +222,7 @@ if(Git_FOUND)
+ 		set(SLEEPY_DISCORD_VERSION_IS_MASTER "0")
+ 	endif()
+ 	execute_process(
+-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
++		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+ 		COMMAND ${GIT_EXECUTABLE} describe --always --long --dirty
+ 		OUTPUT_VARIABLE SLEEPY_DISCORD_VERSION_DESCRIPTION
+ 		OUTPUT_STRIP_TRAILING_WHITESPACE
+@@ -224,6 +234,15 @@ if(Git_FOUND)
+ 	else()
+ 		set(SLEEPY_DISCORD_VERSION_DESCRIPTION_CONCAT "")
+ 	endif()
++endif()
++
++if (NOT DEFINED SLEEPY_DISCORD_VERSION_BUILD
++    OR NOT DEFINED SLEEPY_DISCORD_VERSION_BRANCH
++    OR NOT DEFINED SLEEPY_DISCORD_VERSION_HASH
++    OR NOT DEFINED SLEEPY_DISCORD_VERSION_BRANCH
++    OR NOT DEFINED SLEEPY_DISCORD_VERSION_DESCRIPTION)
++	set(NO_VERSION_INFO ON)
++else()
+ 	configure_file(
+ 		"${PROJECT_SOURCE_DIR}/include/sleepy_discord/version.h.in"
+ 		"${PROJECT_SOURCE_DIR}/include/sleepy_discord/version.h"
+-- 
+2.19.2.windows.1
+

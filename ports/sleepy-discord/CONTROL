@@ -1,0 +1,17 @@
+Source: sleepy-discord
+Version: 2020-07-05
+Homepage: https://yourwaifu.dev/sleepy-discord/documentation.html
+Description: C++ library for Discord
+Build-Depends: cpr
+
+Feature: websocketpp
+Description: Use websocketpp for sleepy-discord
+Build-Depends: openssl-windows, asio, websocketpp
+
+Feature: uwebsockets
+Description: Use uwebsockets for sleepy-discord
+Build-Depends: openssl-windows, zlib, asio, uwebsockets
+
+Feature: voice
+Description: Enable voice functionality for sleepy-discord
+Build-Depends: libopusenc, libsodium

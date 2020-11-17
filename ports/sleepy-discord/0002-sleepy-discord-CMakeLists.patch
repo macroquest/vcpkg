@@ -1,0 +1,166 @@
+---
+ sleepy_discord/CMakeLists.txt | 99 +++++++++++++++++++++++------------
+ 1 file changed, 65 insertions(+), 34 deletions(-)
+
+diff --git a/sleepy_discord/CMakeLists.txt b/sleepy_discord/CMakeLists.txt
+index 94d7c71..b6a59a2 100644
+--- a/sleepy_discord/CMakeLists.txt
++++ b/sleepy_discord/CMakeLists.txt
+@@ -52,10 +52,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	#for some reason you a limited ammount of target_link_libraries calls
+ 	set(LIBRARIES_TO_LINK)
+ 	if(USE_CPR)
+-		if(CURL_STATICLIB)
+-			target_compile_definitions(${CPR_LIBRARIES} PUBLIC CURL_STATICLIB)
++		if(USE_VCPKG_LIBS)
++			find_package(cpr REQUIRED)
++		else()
++			if(CURL_STATICLIB)
++				target_compile_definitions(${CPR_LIBRARIES} PUBLIC CURL_STATICLIB)
++			endif()
++			target_include_directories(sleepy-discord PUBLIC ${CPR_INCLUDE_DIRS})
+ 		endif()
+-		target_include_directories(sleepy-discord PUBLIC ${CPR_INCLUDE_DIRS})
+ 		list(APPEND LIBRARIES_TO_LINK "${CPR_LIBRARIES}")
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_CPR)
+ 	else()
+@@ -63,7 +67,12 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	endif()
+ 
+ 	if(USE_ASIO)
+-		target_include_directories(sleepy-discord PUBLIC ${asio_SOURCE_DIR}/asio/include)
++		if(USE_VCPKG_LIBS)
++			find_package(asio CONFIG REQUIRED)
++			list(APPEND LIBRARIES_TO_LINK "asio::asio")
++		else()
++			target_include_directories(sleepy-discord PUBLIC ${asio_SOURCE_DIR}/asio/include)
++		endif()
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_ASIO)
+ 	else()
+ 		target_compile_definitions(sleepy-discord PUBLIC NONEXISTENT_ASIO)
+@@ -78,11 +87,15 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	endif()
+ 
+ 	if(USE_WEBSOCKETPP)
+-		target_include_directories(sleepy-discord PUBLIC ${websocketpp_SOURCE_DIR})
+-		if (WIN32)
++		if(USE_VCPKG_LIBS)
++			find_package(websocketpp REQUIRED)
++		else()
++			target_include_directories(sleepy-discord PUBLIC ${websocketpp_SOURCE_DIR})
++		endif()
++		if(WIN32)
+ 			find_package(OpenSSL REQUIRED)
+ 			list(APPEND LIBRARIES_TO_LINK "OpenSSL::SSL" "OpenSSL::Crypto")
+-		elseif (UNIX)
++		elseif(UNIX)
+ 			list(APPEND LIBRARIES_TO_LINK "ssl" "crypto" "Threads::Threads")
+ 		endif()
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_WEBSOCKETPP)
+@@ -91,10 +104,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	endif()
+ 
+ 	if(USE_UWEBSOCKETS)
+-		find_library(LIB_UWS uWS
+-			PATHS ${uwebsockets_SOURCE_DIR}/lib
+-		)
+-		target_include_directories(sleepy-discord PUBLIC ${uwebsockets_SOURCE_DIR}/include)
++		if(USE_VCPKG_LIBS)
++			find_package(uwebsockets REQUIRED)
++		else()
++			find_library(LIB_UWS uWS
++				PATHS ${uwebsockets_SOURCE_DIR}/lib
++			)
++			target_include_directories(sleepy-discord PUBLIC ${uwebsockets_SOURCE_DIR}/include)
++		endif()
+ 		list(APPEND LIBRARIES_TO_LINK "${LIB_UWS}")
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_UWEBSOCKETS)
+ 	else()
+@@ -102,7 +119,11 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	endif()
+ 
+ 	if(USE_LIBOPUS)
+-		target_include_directories(sleepy-discord PUBLIC ${opus_SOURCE_DIR}/include)
++		if(USE_VCPKG_LIBS)
++			find_package(opus REQUIRED)
++		else()
++			target_include_directories(sleepy-discord PUBLIC ${opus_SOURCE_DIR}/include)
++		endif()
+ 		list(APPEND LIBRARIES_TO_LINK "opus")
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_OPUS)
+ 	else()
+@@ -110,26 +131,31 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	endif()
+ 
+ 	if(USE_LIBSODIUM)
+-		if (WIN32)
+-			find_package(unofficial-sodium CONFIG REQUIRED)
+-			list(APPEND LIBRARIES_TO_LINK "unofficial-sodium::sodium")
+-			find_path(SODIUM_INCLUDE_DIR NAMES sodium.h)
+-			target_include_directories(sleepy-discord PUBLIC ${SODIUM_INCLUDE_DIR})
++		if(USE_VCPKG_LIBS)
++			find_package(libsodium CONFIG REQUIRED)
++			list(APPEND LIBRARIES_TO_LINK "libsodium::sodium")
+ 		else()
+-			add_dependencies(sleepy-discord libsodium-make)
+-			ExternalProject_Get_property(libsodium-make BINARY_DIR)
+-			set(libsodium-make_BINARY_DIR ${BINARY_DIR})
+-			message(WARNING ${libsodium-make_BINARY_DIR})
+-			set(
+-				LIB_SODIUM_BUILDS 
+-				${libsodium-make_BINARY_DIR}/src/libsodium/.libs/${CMAKE_STATIC_LIBRARY_PREFIX}sodium${CMAKE_STATIC_LIBRARY_SUFFIX}
+-			)
+-			target_include_directories(
+-				sleepy-discord PUBLIC
+-				${libsodium_SOURCE_DIR}/src/libsodium/include
+-				${libsodium-make_BINARY_DIR}/src/libsodium/include
+-			)
+-			list(APPEND LIBRARIES_TO_LINK "${LIB_SODIUM_BUILDS}")
++			if (WIN32)
++				find_package(unofficial-sodium CONFIG REQUIRED)
++				list(APPEND LIBRARIES_TO_LINK "unofficial-sodium::sodium")
++				find_path(SODIUM_INCLUDE_DIR NAMES sodium.h)
++				target_include_directories(sleepy-discord PUBLIC ${SODIUM_INCLUDE_DIR})
++			else()
++				add_dependencies(sleepy-discord libsodium-make)
++				ExternalProject_Get_property(libsodium-make BINARY_DIR)
++				set(libsodium-make_BINARY_DIR ${BINARY_DIR})
++				message(WARNING ${libsodium-make_BINARY_DIR})
++				set(
++					LIB_SODIUM_BUILDS
++					${libsodium-make_BINARY_DIR}/src/libsodium/.libs/${CMAKE_STATIC_LIBRARY_PREFIX}sodium${CMAKE_STATIC_LIBRARY_SUFFIX}
++				)
++				target_include_directories(
++					sleepy-discord PUBLIC
++					${libsodium_SOURCE_DIR}/src/libsodium/include
++					${libsodium-make_BINARY_DIR}/src/libsodium/include
++				)
++				list(APPEND LIBRARIES_TO_LINK "${LIB_SODIUM_BUILDS}")
++			endif()
+ 		endif()
+ 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_SODIUM)
+ 	else()
+@@ -138,11 +164,16 @@ if (NOT ONLY_SLEEPY_DISCORD)
+ 	target_link_libraries(sleepy-discord PUBLIC ${LIBRARIES_TO_LINK})
+ endif()
+ 
+-if(NOT Git_FOUND)
+-	target_compile_definitions(sleepy-discord PRIVATE NONEXISTANT_GIT_INFO)
+-
++if(DEFINED NO_VERSION_INFO)
++	target_compile_definitions(sleepy-discord PUBLIC NONEXISTANT_VERSION_H)
+ endif()
+ 
+ if(ENABLE_VOICE)
+ 	target_compile_definitions(sleepy-discord PUBLIC SLEEPY_VOICE_ENABLED)
++endif()
++
++if(USE_VCPKG_LIBS)
++	install(TARGETS sleepy-discord LIBRARY)
++	install(DIRECTORY ../include/sleepy_discord TYPE INCLUDE
++	        CONFIGURATIONS Release)
+ endif()
+\ No newline at end of file
+-- 
+2.19.2.windows.1
+
