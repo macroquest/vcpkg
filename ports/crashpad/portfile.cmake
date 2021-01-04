@@ -1,5 +1,5 @@
 vcpkg_fail_port_install(
-    ON_ARCH "x86" "arm" "arm64"
+    ON_ARCH "arm" "arm64"
     ON_TARGET "UWP" "LINUX")
 
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
@@ -62,6 +62,11 @@ replace_gn_dependency(
     "z;zlib;zlibd"
 )
 
+if (TRIPLET_SYSTEM_ARCH MATCHES "x86")
+    set(OPTIONS_ALL "target_cpu=\"x86\"")
+else()
+    set(OPTIONS_ALL "")
+endif()
 set(OPTIONS_DBG "is_debug=true")
 set(OPTIONS_REL "")
 
@@ -96,6 +101,7 @@ endif()
 
 vcpkg_configure_gn(
     SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS "${OPTIONS_ALL}"
     OPTIONS_DEBUG "${OPTIONS_DBG}"
     OPTIONS_RELEASE "${OPTIONS_REL}"
 )
