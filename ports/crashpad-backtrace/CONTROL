@@ -1,0 +1,7 @@
+Source: crashpad-backtrace
+Version: 2020-06-29
+Homepage: https://github.com/backtrace-labs/crashpad/blob/backtrace/README.md
+Description: Crashpad is a crash-reporting system. Backtrace interface provided.
+  Crashpad is a library for capturing, storing and transmitting postmortem crash reports from a client to an upstream collection server. Crashpad aims to make it possible for clients to capture process state at the time of crash with the best possible fidelity and coverage, with the minimum of fuss.
+Build-Depends: zlib
+Supports: (x64|x86) & (osx|windows)
