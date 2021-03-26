@@ -4,12 +4,17 @@ vcpkg_from_github(
     REF 4a9ccf7e38e257feecce0c579a782741254eaeef # v1.8.0
     SHA512 333f14704e0d0aa88abbe4ddd29aeb009de2f845440559d463f1b7f9c7da32b2fbdba0f2abf97ec2a5c479d2d62bb2220b21a1bc423d62fbbb93952cf829d532
     HEAD_REF v1.x
-    PATCHES fix-featurebuild.patch
+    PATCHES 
+        fix-featurebuild.patch 
+        fix-androidbuild.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
 	benchmark SPDLOG_BUILD_BENCH
 )
+
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" SPDLOG_BUILD_SHARED)
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
@@ -18,6 +23,7 @@ vcpkg_configure_cmake(
         ${FEATURE_OPTIONS}
         -DSPDLOG_FMT_EXTERNAL=ON
         -DSPDLOG_INSTALL=ON
+        -DSPDLOG_BUILD_SHARED=${SPDLOG_BUILD_SHARED}
 )
 
 vcpkg_install_cmake()
