@@ -7,6 +7,7 @@ vcpkg_from_github(
     PATCHES 
         fix-featurebuild.patch 
         fix-androidbuild.patch
+        mq2-tweakme.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
