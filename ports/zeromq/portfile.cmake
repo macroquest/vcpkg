@@ -1,9 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO zeromq/libzmq
-    REF 4dd504abebf3eb944d0554c36d490fb2bb742e4f
-    SHA512 cf0d81692744a66b1b318fc86d617e0c4dbd74801b34a9b526f1a475dda1e4b1b303ffcdb35f698e5c2bc796de358f8608c82dbc8d5ba8128ec01e1fd04537a5
-    HEAD_REF master
+    REF v4.3.4
+    SHA512 ad828b1ab5a87983285a6b44b08240816ed1c4e2c73306ab1a851bf80df1892b5e2f92064a49fbadc1f4c75043625ace77dd25b64d5d1c2a7d1d61cc916fba0b
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" BUILD_STATIC)
@@ -34,6 +33,7 @@ vcpkg_configure_cmake(
         -DWITH_PERF_TOOL=OFF
         -DWITH_DOCS=OFF
         -DWITH_NSS=OFF
+        -DWITH_LIBSODIUM_STATIC=${BUILD_STATIC}
         ${FEATURE_OPTIONS}
         ${PLATFORM_OPTIONS}
     OPTIONS_DEBUG
@@ -47,21 +47,14 @@ vcpkg_copy_pdbs()
 if(EXISTS ${CURRENT_PACKAGES_DIR}/CMake)
     vcpkg_fixup_cmake_targets(CONFIG_PATH CMake)
 endif()
-if(EXISTS ${CURRENT_PACKAGES_DIR}/share/cmake/ZeroMQ)
-    vcpkg_fixup_cmake_targets(CONFIG_PATH share/cmake/ZeroMQ)
+if(EXISTS ${CURRENT_PACKAGES_DIR}/lib/cmake/ZeroMQ)
+    vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/ZeroMQ)
 endif()
 
 file(COPY
     ${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake
     DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT}
 )
-
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/include/zmq.h
-        "defined ZMQ_STATIC"
-        "1 //defined ZMQ_STATIC"
-    )
-endif()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
