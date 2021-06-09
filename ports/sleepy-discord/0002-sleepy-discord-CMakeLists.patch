@@ -1,12 +1,8 @@
----
- sleepy_discord/CMakeLists.txt | 99 +++++++++++++++++++++++------------
- 1 file changed, 65 insertions(+), 34 deletions(-)
-
 diff --git a/sleepy_discord/CMakeLists.txt b/sleepy_discord/CMakeLists.txt
-index 94d7c71..b6a59a2 100644
+index 386ea5a8..1c358044 100644
 --- a/sleepy_discord/CMakeLists.txt
 +++ b/sleepy_discord/CMakeLists.txt
-@@ -52,10 +52,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -53,10 +53,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	#for some reason you a limited ammount of target_link_libraries calls
  	set(LIBRARIES_TO_LINK)
  	if(USE_CPR)
@@ -24,7 +20,7 @@ index 94d7c71..b6a59a2 100644
  		list(APPEND LIBRARIES_TO_LINK "${CPR_LIBRARIES}")
  		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_CPR)
  	else()
-@@ -63,7 +67,12 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -64,7 +68,12 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	endif()
  
  	if(USE_ASIO)
@@ -36,28 +32,22 @@ index 94d7c71..b6a59a2 100644
 +			target_include_directories(sleepy-discord PUBLIC ${asio_SOURCE_DIR}/asio/include)
 +		endif()
  		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_ASIO)
- 	else()
+ 	elseif(USE_BOOST_ASIO)
  		target_compile_definitions(sleepy-discord PUBLIC NONEXISTENT_ASIO)
-@@ -78,11 +87,15 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -79,7 +88,11 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	endif()
  
  	if(USE_WEBSOCKETPP)
 -		target_include_directories(sleepy-discord PUBLIC ${websocketpp_SOURCE_DIR})
--		if (WIN32)
 +		if(USE_VCPKG_LIBS)
 +			find_package(websocketpp REQUIRED)
 +		else()
 +			target_include_directories(sleepy-discord PUBLIC ${websocketpp_SOURCE_DIR})
 +		endif()
-+		if(WIN32)
+ 		if (WIN32)
  			find_package(OpenSSL REQUIRED)
  			list(APPEND LIBRARIES_TO_LINK "OpenSSL::SSL" "OpenSSL::Crypto")
--		elseif (UNIX)
-+		elseif(UNIX)
- 			list(APPEND LIBRARIES_TO_LINK "ssl" "crypto" "Threads::Threads")
- 		endif()
- 		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_WEBSOCKETPP)
-@@ -91,10 +104,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -92,10 +105,14 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	endif()
  
  	if(USE_UWEBSOCKETS)
@@ -76,7 +66,7 @@ index 94d7c71..b6a59a2 100644
  		list(APPEND LIBRARIES_TO_LINK "${LIB_UWS}")
  		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_UWEBSOCKETS)
  	else()
-@@ -102,7 +119,11 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -103,7 +120,11 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	endif()
  
  	if(USE_LIBOPUS)
@@ -89,7 +79,7 @@ index 94d7c71..b6a59a2 100644
  		list(APPEND LIBRARIES_TO_LINK "opus")
  		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_OPUS)
  	else()
-@@ -110,26 +131,31 @@ if (NOT ONLY_SLEEPY_DISCORD)
+@@ -111,25 +132,30 @@ if (NOT ONLY_SLEEPY_DISCORD)
  	endif()
  
  	if(USE_LIBSODIUM)
@@ -105,7 +95,6 @@ index 94d7c71..b6a59a2 100644
 -			add_dependencies(sleepy-discord libsodium-make)
 -			ExternalProject_Get_property(libsodium-make BINARY_DIR)
 -			set(libsodium-make_BINARY_DIR ${BINARY_DIR})
--			message(WARNING ${libsodium-make_BINARY_DIR})
 -			set(
 -				LIB_SODIUM_BUILDS 
 -				${libsodium-make_BINARY_DIR}/src/libsodium/.libs/${CMAKE_STATIC_LIBRARY_PREFIX}sodium${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -125,9 +114,8 @@ index 94d7c71..b6a59a2 100644
 +				add_dependencies(sleepy-discord libsodium-make)
 +				ExternalProject_Get_property(libsodium-make BINARY_DIR)
 +				set(libsodium-make_BINARY_DIR ${BINARY_DIR})
-+				message(WARNING ${libsodium-make_BINARY_DIR})
 +				set(
-+					LIB_SODIUM_BUILDS
++					LIB_SODIUM_BUILDS 
 +					${libsodium-make_BINARY_DIR}/src/libsodium/.libs/${CMAKE_STATIC_LIBRARY_PREFIX}sodium${CMAKE_STATIC_LIBRARY_SUFFIX}
 +				)
 +				target_include_directories(
@@ -140,13 +128,12 @@ index 94d7c71..b6a59a2 100644
  		endif()
  		target_compile_definitions(sleepy-discord PUBLIC EXISTENT_SODIUM)
  	else()
-@@ -138,11 +164,16 @@ if (NOT ONLY_SLEEPY_DISCORD)
- 	target_link_libraries(sleepy-discord PUBLIC ${LIBRARIES_TO_LINK})
+@@ -156,10 +182,16 @@ else()
+ 		NONEXISTENT_SODIUM)
  endif()
  
 -if(NOT Git_FOUND)
 -	target_compile_definitions(sleepy-discord PRIVATE NONEXISTANT_GIT_INFO)
--
 +if(DEFINED NO_VERSION_INFO)
 +	target_compile_definitions(sleepy-discord PUBLIC NONEXISTANT_VERSION_H)
  endif()
@@ -161,6 +148,3 @@ index 94d7c71..b6a59a2 100644
 +	        CONFIGURATIONS Release)
  endif()
 \ No newline at end of file
--- 
-2.19.2.windows.1
-
