@@ -13,6 +13,9 @@ vcpkg_from_github(
     REF 53e68d6a569ab6da17b74279e308bf94919db933
     SHA512 1ee6de7aa70f3d7fc6ec0e21f5e65c6a868c23a29b4f26f614b59bbce3425c1305ce192562bf287d40f98060301b8638bc4bef95789fe8594ce5809adb6dc1e5
     HEAD_REF develop
+    PATCHES
+        "MQ2Discord-0001-Rate-Limit-Check.patch"
+        "MQ2Discord-0002-Add-Polling.patch"
 )
 
 # Handle version data here to prevent issues from doing this twice in parallel

@@ -324,3 +324,5 @@ pythonenv3.8/
 # MacroQuest
 ###########################################################
 vcpkg_mq_last_bootstrap.txt
+vcpkg_mq_last_bootstrap-x86.txt
+vcpkg_mq_last_bootstrap-x64.txt
