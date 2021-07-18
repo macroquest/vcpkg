@@ -15,7 +15,6 @@ vcpkg_from_github(
     HEAD_REF develop
     PATCHES
         "MQ2Discord-0001-Rate-Limit-Check.patch"
-        "MQ2Discord-0002-Add-Polling.patch"
 )
 
 # Handle version data here to prevent issues from doing this twice in parallel
