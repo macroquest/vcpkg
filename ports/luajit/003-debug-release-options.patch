@@ -7,7 +7,7 @@ index 744843a..d1abf76 100644
  @setlocal
  @set SOURCEDIR=%1
 -@set LJCOMPILE=cl /nologo /c /O2 /W3 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_STDIO_INLINE=__declspec(dllexport)__inline /I%SOURCEDIR%
-+@set LJCOMPILE=cl /nologo /c /W3 /Zi /D_CRT_SECURE_NO_DEPRECATE /I%SOURCEDIR%
++@set LJCOMPILE=cl /nologo /c /W3 /D_CRT_SECURE_NO_DEPRECATE /I%SOURCEDIR%
  @set LJLINK=link /nologo
  @set LJMT=mt /nologo
  @set LJLIB=lib /nologo /nodefaultlib
@@ -19,11 +19,11 @@ index 744843a..d1abf76 100644
 +@if "%3" neq "debug" goto :RELEASE
  @shift
 -@set LJCOMPILE=%LJCOMPILE% /Zi
-+@set LJCOMPILE=%LJCOMPILE% /Od /DLUA_USE_ASSERT /DLUAJIT_ASSERT
++@set LJCOMPILE=%LJCOMPILE% /Z7 /Od /DLUA_USE_ASSERT /DLUAJIT_ASSERT
  @set CRT_LINKAGE=%CRT_LINKAGE%d
 +@goto :NODEBUG
 +:RELEASE
-+@set LJCOMPILE=%LJCOMPILE% /O2 
++@set LJCOMPILE=%LJCOMPILE% /O2 /Zi
  :NODEBUG
  @if "%3"=="amalg" goto :AMALGDLL
  @if "%3"=="static" goto :STATIC
