@@ -1,20 +1,20 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO curl/curl
-    REF bfbde883af33397943df68a3ae01847a634d33bf #curl-7_78_0
-    SHA512 72c2d0daedbd1e0610f507f637c5725cb0769befe5205f613260217b692e27ec135711974f85660f863a49b415c1457d2d29960158758e232caa89f972f7045e
+    REF 9e560d11aad028de74addc0d1edfefa5667884f4 #curl-7_80_0
+    SHA512 f920f151e31f26de8d9a0f8f22aebe98435b0165c52bc169a1204f84f38671dea1eaa2833feceb8495e619b8b9becac0c8ad335ec6fe0c2c59e458bf9014c6c2
     HEAD_REF master
     PATCHES
         0002_fix_uwp.patch
         0005_remove_imp_suffix.patch
         0006_fix_tool_depends.patch
         0007_disable_tool_export_curl_target.patch
-        0010_fix_othertests_cmake.patch
         0011_fix_static_build.patch
         0012-fix-dependency-idn2.patch
         0020-fix-pc-file.patch
         0021-normaliz.patch # for mingw on case-sensitive file system
         0022-deduplicate-libs.patch
+        0023-fix-static-libs-export.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" CURL_STATICLIB)
@@ -106,7 +106,15 @@ endif()
 
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/CURL)
 
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+vcpkg_fixup_pkgconfig()
+set(namespec "curl")
+if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
+    set(namespec "libcurl")
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/lib/pkgconfig/libcurl.pc" " -lcurl" " -l${namespec}")
+endif()
+if(NOT DEFINED VCPKG_BUILD_TYPE)
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/libcurl.pc" " -lcurl" " -l${namespec}-d")
+endif()
 
 #Fix install path
 vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/bin/curl-config" "${CURRENT_PACKAGES_DIR}" "\${prefix}")
@@ -118,12 +126,13 @@ if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/bin/curl-config")
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "${CURRENT_PACKAGES_DIR}" "\${prefix}")
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "${CURRENT_INSTALLED_DIR}" "\${prefix}")
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "\nprefix=\${prefix}/debug" [=[prefix=$(CDPATH= cd -- "$(dirname -- "$0")"/../../../.. && pwd -P)]=])
-    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "-lcurl" "-lcurl-d")
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "-lcurl" "-l${namespec}-d")
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "curl." "curl-d.")
     file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/tools/${PORT}/debug/bin")
     file(RENAME "${CURRENT_PACKAGES_DIR}/debug/bin/curl-config" "${CURRENT_PACKAGES_DIR}/tools/${PORT}/debug/bin/curl-config")
 endif()
 
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR NOT VCPKG_TARGET_IS_WINDOWS)
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin")
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin")
@@ -134,11 +143,6 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
         "#ifdef CURL_STATICLIB"
         "#if 1"
     )
-endif()
-
-vcpkg_fixup_pkgconfig()
-if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/libcurl.pc")
-    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/libcurl.pc" " -lcurl" " -lcurl-d")
 endif()
 
 file(INSTALL "${CURRENT_PORT_DIR}/vcpkg-cmake-wrapper.cmake" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
