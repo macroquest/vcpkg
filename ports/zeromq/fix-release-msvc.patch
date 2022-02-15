@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dd3d8eb9..21bcd414 100644
+index dd3d8eb9..ef6662da 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -15,6 +15,7 @@ include(CheckCSourceCompiles)
@@ -43,7 +43,7 @@ index dd3d8eb9..21bcd414 100644
      else()
        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
      endif()
-@@ -151,19 +152,19 @@ if(APPLE)
+@@ -151,19 +152,18 @@ if(APPLE)
  endif()
  
  if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
@@ -56,8 +56,8 @@ index dd3d8eb9..21bcd414 100644
  
  # Enable WebSocket transport and RadixTree
  if(ENABLE_DRAFTS)
+-  set(ZMQ_BUILD_DRAFT_API 1)
 +  message(STATUS "Building draft classes and methods")
-   set(ZMQ_BUILD_DRAFT_API 1)
    option(ENABLE_WS "Enable WebSocket transport" ON)
    option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
  else()
@@ -65,7 +65,7 @@ index dd3d8eb9..21bcd414 100644
    option(ENABLE_WS "Enable WebSocket transport" OFF)
    option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" OFF)
  endif()
-@@ -258,6 +259,7 @@ endif()
+@@ -258,6 +258,7 @@ endif()
  
  option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" ON)
  option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
@@ -73,7 +73,7 @@ index dd3d8eb9..21bcd414 100644
  option(ENABLE_CURVE "Enable CURVE security" ON)
  
  if(ENABLE_CURVE)
-@@ -271,6 +273,9 @@ if(ENABLE_CURVE)
+@@ -271,6 +272,9 @@ if(ENABLE_CURVE)
        endif()
        set(ZMQ_USE_LIBSODIUM 1)
        set(ZMQ_HAVE_CURVE 1)
@@ -83,7 +83,7 @@ index dd3d8eb9..21bcd414 100644
      else()
        message(
          WARNING
-@@ -464,6 +469,12 @@ message(STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
+@@ -464,6 +468,12 @@ message(STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
  string(TOUPPER ${API_POLLER} UPPER_API_POLLER)
  set(ZMQ_POLL_BASED_ON_${UPPER_API_POLLER} 1)
  
@@ -96,7 +96,7 @@ index dd3d8eb9..21bcd414 100644
  execute_process(
    COMMAND getconf LEVEL1_DCACHE_LINESIZE
    OUTPUT_VARIABLE CACHELINE_SIZE
-@@ -476,6 +487,7 @@ else()
+@@ -476,6 +486,7 @@ else()
    set(ZMQ_CACHELINE_SIZE ${CACHELINE_SIZE})
  endif()
  message(STATUS "Using ${ZMQ_CACHELINE_SIZE} bytes alignment for lock-free data structures")
@@ -104,7 +104,7 @@ index dd3d8eb9..21bcd414 100644
  
  if(NOT CYGWIN)
    # TODO cannot we simply do 'if(WIN32) set(ZMQ_HAVE_WINDOWS ON)' or similar?
-@@ -484,8 +496,12 @@ endif()
+@@ -484,8 +495,12 @@ endif()
  
  if(NOT WIN32)
    set(ZMQ_HAVE_IPC 1)
@@ -117,7 +117,7 @@ index dd3d8eb9..21bcd414 100644
  endif()
  
  # ##################### BEGIN condition_variable_t selection
-@@ -555,6 +571,7 @@ else()
+@@ -555,6 +570,7 @@ else()
    check_cxx_symbol_exists(if_nametoindex net/if.h HAVE_IF_NAMETOINDEX)
    check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
    check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
@@ -125,7 +125,7 @@ index dd3d8eb9..21bcd414 100644
  endif()
  
  if(NOT MINGW)
-@@ -879,13 +896,6 @@ if(MSVC)
+@@ -879,13 +895,6 @@ if(MSVC)
    string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
    string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
  
@@ -139,7 +139,7 @@ index dd3d8eb9..21bcd414 100644
  endif()
  
  # -----------------------------------------------------------------------------
-@@ -1307,6 +1317,27 @@ if(MSVC)
+@@ -1307,6 +1316,27 @@ if(MSVC)
                             VS_GLOBAL_RunCodeAnalysis true)
    endfunction()
    if(BUILD_SHARED)
@@ -167,7 +167,17 @@ index dd3d8eb9..21bcd414 100644
      add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs}
                                ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
      if(ENABLE_ANALYSIS)
-@@ -1365,12 +1396,12 @@ else()
+@@ -1348,9 +1378,6 @@ else()
+   if(NOT MINGW)
+     add_library(objects OBJECT ${sources})
+     set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+-    target_include_directories(
+-      objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+-                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
+   endif()
+ 
+   if(BUILD_SHARED)
+@@ -1365,12 +1392,12 @@ else()
             add_library(libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
                                       ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
          endif()
@@ -182,7 +192,28 @@ index dd3d8eb9..21bcd414 100644
                          SOVERSION "5" OUTPUT_NAME "${ZMQ_OUTPUT_BASENAME}" PREFIX "lib")
      if(ZMQ_BUILD_FRAMEWORK)
        set_target_properties(
-@@ -1816,3 +1847,9 @@ if(MSVC
+@@ -1419,10 +1446,19 @@ if(BUILD_STATIC)
+   list(APPEND target_outputs "libzmq-static")
+ endif()
+ 
+-foreach(target ${target_outputs})
++set(build_targets ${target_outputs})
++if(TARGET objects)
++  list(APPEND build_targets "objects")
++endif()
++
++foreach(target ${build_targets})
+   target_include_directories(
+     ${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
++
++  if(ENABLE_DRAFTS)
++    target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
++  endif()
+ endforeach()
+ 
+ if(BUILD_SHARED)
+@@ -1816,3 +1852,9 @@ if(MSVC
     AND BUILD_STATIC)
    add_dependencies(libzmq-static libzmq)
  endif()
