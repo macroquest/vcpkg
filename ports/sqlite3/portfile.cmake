@@ -23,6 +23,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         geopoly WITH_GEOPOLY
         json1 WITH_JSON1
+        math WITH_MATH
         INVERTED_FEATURES
         tool SQLITE3_SKIP_TOOLS
 )

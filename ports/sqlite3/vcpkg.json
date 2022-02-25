@@ -20,6 +20,9 @@
     "json1": {
       "description": "enable JSON functionality for sqlite3"
     },
+    "math": {
+      "description": "enable MATH functions for sqlite3"
+    },
     "tool": {
       "description": "sqlite3 executable"
     }

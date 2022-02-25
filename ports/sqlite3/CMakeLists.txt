@@ -33,6 +33,10 @@ if(WITH_JSON1)
     add_compile_definitions(SQLITE_ENABLE_JSON1)
 endif()
 
+if(WITH_MATH)
+    add_compile_definitions(SQLITE_ENABLE_MATH_FUNCTIONS)
+endif()
+
 target_include_directories(sqlite3 INTERFACE $<INSTALL_INTERFACE:include>)
 if(NOT WIN32)
     find_package(Threads REQUIRED)
