@@ -3,13 +3,14 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/backtrace-labs/crashpad.git
-    REF 8fa7b60a28e39f6f706890fd43b9c820ec85cfe9
+    REF b51ddfa3119f85cdeaf74af7637b1b0c5042f7c5
     PATCHES
         0001-Add-buildflags-header.patch
 )
 
-vcpkg_find_acquire_program(PYTHON3)
-vcpkg_replace_string("${SOURCE_PATH}/.gn" "script_executable = \"python3\"" "script_executable = \"${PYTHON3}\"")
+# backtrace's version is still python2
+vcpkg_find_acquire_program(PYTHON2)
+vcpkg_replace_string("${SOURCE_PATH}/.gn" "script_executable = \"python3\"" "script_executable = \"${PYTHON2}\"")
 
 function(checkout_in_path PATH_TO_CHECK URL REF)
     if(EXISTS "${PATH_TO_CHECK}")
@@ -35,7 +36,7 @@ endfunction()
 checkout_in_path(
     "${SOURCE_PATH}/third_party/mini_chromium/mini_chromium"
     "https://chromium.googlesource.com/chromium/mini_chromium"
-    "5654edb4225bcad13901155c819febb5748e502b"
+    "822fada4a9972e3e2f36a981da770539025beb0a"
 )
 
 function(replace_gn_dependency INPUT_FILE OUTPUT_FILE LIBRARY_NAMES)

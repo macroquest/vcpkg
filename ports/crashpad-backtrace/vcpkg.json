@@ -1,7 +1,7 @@
 {
   "name": "crashpad-backtrace",
-  "version-string": "2022-11-24",
-  "port-version": 2,
+  "version-string": "2023-01-30",
+  "port-version": 1,
   "description": [
     "Crashpad is a crash-reporting system.  Backtrace interface provided.",
     "Crashpad is a library for capturing, storing and transmitting postmortem crash reports from a client to an upstream collection server. Crashpad aims to make it possible for clients to capture process state at the time of crash with the best possible fidelity and coverage, with the minimum of fuss."
