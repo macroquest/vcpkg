@@ -1,0 +1,33 @@
+diff --git a/lib/vtls/vtls.c b/lib/vtls/vtls.c
+index 873ee6bac..f9fc44426 100644
+--- a/lib/vtls/vtls.c
++++ b/lib/vtls/vtls.c
+@@ -1259,10 +1259,10 @@ const struct Curl_ssl *Curl_ssl =
+   &Curl_ssl_nss;
+ #elif defined(USE_RUSTLS)
+   &Curl_ssl_rustls;
+-#elif defined(USE_OPENSSL)
+-  &Curl_ssl_openssl;
+ #elif defined(USE_SCHANNEL)
+   &Curl_ssl_schannel;
++#elif defined(USE_OPENSSL)
++  &Curl_ssl_openssl;
+ #elif defined(USE_BEARSSL)
+   &Curl_ssl_bearssl;
+ #else
+@@ -1288,12 +1288,12 @@ static const struct Curl_ssl *available_backends[] = {
+ #if defined(USE_NSS)
+   &Curl_ssl_nss,
+ #endif
+-#if defined(USE_OPENSSL)
+-  &Curl_ssl_openssl,
+-#endif
+ #if defined(USE_SCHANNEL)
+   &Curl_ssl_schannel,
+ #endif
++#if defined(USE_OPENSSL)
++  &Curl_ssl_openssl,
++#endif
+ #if defined(USE_BEARSSL)
+   &Curl_ssl_bearssl,
+ #endif
