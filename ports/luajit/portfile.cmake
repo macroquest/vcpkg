@@ -8,6 +8,7 @@ vcpkg_from_github(
         001-fix-build-path.patch
         002-fix-crt-linkage.patch
         003-do-not-set-macosx-deployment-target.patch
+        mq-debug-release-options.patch
 )
 
 if (VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
