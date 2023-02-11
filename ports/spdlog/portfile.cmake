@@ -6,7 +6,7 @@ vcpkg_from_github(
     HEAD_REF v1.x
     PATCHES
         fmt-header.patch # https://github.com/gabime/spdlog/pull/2545
-        mq2-tweakme.patch
+        mq-tweakme.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
