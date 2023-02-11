@@ -9,6 +9,7 @@ vcpkg_from_github(
     PATCHES
         001-cpr-config.patch
         disable_werror.patch
+        mq-streampos-warning.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
