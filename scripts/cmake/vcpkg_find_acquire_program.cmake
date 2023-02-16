@@ -1,52 +1,3 @@
-#[===[.md:
-# vcpkg_find_acquire_program
-
-Download or find a well-known tool.
-
-## Usage
-```cmake
-vcpkg_find_acquire_program(<program>)
-```
-## Parameters
-### program
-This variable specifies both the program to be acquired as well as the out parameter that will be set to the path of the program executable.
-
-## Notes
-The current list of programs includes:
-
-* 7Z
-* ARIA2 (Downloader)
-* BISON
-* CLANG
-* DARK
-* DOXYGEN
-* FLEX
-* GASPREPROCESSOR
-* GPERF
-* PERL
-* PYTHON2
-* PYTHON3
-* GIT
-* GN
-* GO
-* JOM
-* MESON
-* NASM
-* NINJA
-* NUGET
-* SCONS
-* SWIG
-* YASM
-
-Note that msys2 has a dedicated helper function: [`vcpkg_acquire_msys`](vcpkg_acquire_msys.md).
-
-## Examples
-
-* [ffmpeg](https://github.com/Microsoft/vcpkg/blob/master/ports/ffmpeg/portfile.cmake)
-* [openssl](https://github.com/Microsoft/vcpkg/blob/master/ports/openssl/portfile.cmake)
-* [qt5](https://github.com/Microsoft/vcpkg/blob/master/ports/qt5/portfile.cmake)
-#]===]
-
 function(z_vcpkg_find_acquire_program_version_check out_var)
     cmake_parse_arguments(PARSE_ARGV 1 arg
         "EXACT_VERSION_MATCH"
@@ -176,16 +127,13 @@ function(vcpkg_find_acquire_program program)
         set(download_sha512 936381254fea2e596db6a16c23b08ced25c4081fda484e1b8c4356755016e4b956bd00f3d2ee651d5f41a7695e9998f6c1ac3f4a237212b9c55aca8c5fea14e9)
     elseif(program STREQUAL "NASM")
         set(program_name nasm)
-        set(program_version 2.15.05)
+        set(program_version 2.16.01)
         set(paths_to_search "${DOWNLOADS}/tools/nasm/nasm-${program_version}")
         set(brew_package_name "nasm")
         set(apt_package_name "nasm")
-        set(download_urls
-            "https://www.nasm.us/pub/nasm/releasebuilds/${program_version}/win32/nasm-${program_version}-win32.zip"
-            "https://fossies.org/windows/misc/nasm-${program_version}-win32.zip"
-        )
-        set(download_filename "nasm-${program_version}-win32.zip")
-        set(download_sha512 9412b8caa07e15eac8f500f6f8fab9f038d95dc25e0124b08a80645607cf5761225f98546b52eac7b894420d64f26c3cbf22c19cd286bbe583f7c964256c97ed)
+        set(download_urls "https://www.nasm.us/pub/nasm/releasebuilds/${program_version}/win64/nasm-${program_version}-win64.zip")
+        set(download_filename "nasm-${program_version}-win64.zip")
+        set(download_sha512 ce4d02f530dc3376b4513f219bbcec128ee5bebd8a5c332599b48d8071f803d1538d7258fec7c2e9b4d725b8d7314cea2696289d0493017eb13bfe70e5cb5062)
     elseif(program STREQUAL "YASM")
         set(program_name yasm)
         set(program_version 1.3.0.6.g1962)
@@ -216,21 +164,47 @@ function(vcpkg_find_acquire_program program)
     elseif(program STREQUAL "GN")
         set(program_name gn)
         set(rename_binary_to "gn")
-        set(cipd_download_gn "https://chrome-infra-packages.appspot.com/dl/gn/gn")
-        if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-            set(supported_on_unix ON)
-            set(program_version "xus7xtaPhpv5vCmKFOnsBVoB-PKmhZvRsSTjbQAuF0MC")
-            set(gn_platform "linux-amd64")
-            set(download_sha512 "871e75d7f3597b74fb99e36bb41fe5a9f8ce8a4d9f167f4729fc6e444807a59f35ec8aca70c2274a99c79d70a1108272be1ad991678a8ceb39e30f77abb13135")
-        elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
-            set(supported_on_unix ON)
-            set(program_version "qhxILDNcJ2H44HfHmfiU-XIY3E_SIXvFqLd2wvbIgOoC")
-            set(gn_platform "mac-amd64")
-            set(download_sha512 "03ee64cb15bae7fceb412900d470601090bce147cfd45eb9b46683ac1a5dca848465a5d74c55a47df7f0e334d708151249a6d37bb021de74dd48b97ed4a07937")
-        else()
-            set(program_version "qUkAhy9J0P7c5racy-9wB6AHNK_btS18im8S06_ehhwC")
-            set(gn_platform "windows-amd64")
-            set(download_sha512 "263e02bd79eee0cb7b664831b7898565c5656a046328d8f187ef7ae2a4d766991d477b190c9b425fcc960ab76f381cd3e396afb85cba7408ca9e74eb32c175db")
+        if(EXISTS "${CURRENT_HOST_INSTALLED_DIR}/share/gn/version.txt")
+            file(READ "${CURRENT_HOST_INSTALLED_DIR}/share/gn/version.txt" program_version)
+            set(paths_to_search "${CURRENT_HOST_INSTALLED_DIR}/tools/gn")
+        else() # Old behavior
+            message("Consider adding vcpkg-tool-gn as a host dependency of this port or create an issue at https://github.com/microsoft/vcpkg/issues")
+            set(cipd_download_gn "https://chrome-infra-packages.appspot.com/dl/gn/gn")
+            if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+                set(supported_on_unix ON)
+                EXEC_PROGRAM(uname ARGS -m OUTPUT_VARIABLE HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+                if(HOST_ARCH STREQUAL "aarch64")
+                    set(program_version "GkfFAfAUyE-qfeWkdUMaeM1Ov64Fk3SjSj9pwKqZX7gC")
+                    set(gn_platform "linux-arm64")
+                    set(download_sha512 "E88201309A12C00CE60137261B8E1A759780C81D1925B819583B16D2095A16A7D32EFB2AF36C1E1D6EAA142BF6A6A811847D3140E4E94967EE28F4ADF6373E4B")
+                else()
+                    set(program_version "Fv1ENXodhXmEXy_xpZr2gQkVJh57w_IsbsrEJOU0_EoC")
+                    set(gn_platform "linux-amd64")
+                    set(download_sha512 "A7A5CD5633C5547EC1B1A95958486DDAAC91F1A65881EDC0AD8F74DF44E82F08BA74358E9A72DFCDDE6F534A6B9C9A430D3E16ACE2E4346C4D2E9113F7654B3F")
+                endif()
+            elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+                set(supported_on_unix ON)
+                EXEC_PROGRAM(uname ARGS -m OUTPUT_VARIABLE HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+                if(HOST_ARCH STREQUAL "arm64")
+                    set(program_version "qMPtGq7xZlpb-lHjP-SK27ftT4X71WIvguuyx6X14DEC")
+                    set(gn_platform "mac-arm64")
+                    set(download_sha512 "D096FB958D017807427911089AB5A7655AED117F6851C0491AC8063CEDB544423122EF64DF4264ECA86C20A2BDE9E64D7B72DA7ED8C95C2BA79A68B8247D36B8")
+                else()
+                    set(program_version "0x2juPLNfP9603GIyZrUfflxK6LiMcppLAoxEpYuIYoC")
+                    set(gn_platform "mac-amd64")
+                    set(download_sha512 "2696ECE7B2C8008CABDDF10024017E2ECF875F8679424E77052252BDDC83A2096DF3C61D89CD25120EF27E0458C8914BEEED9D418593BDBC4F6ED33A8D4C3DC5")
+                endif()
+            else()
+                if($ENV{PROCESSOR_ARCHITECTURE} STREQUAL "ARM64")
+                    set(program_version "q5ExVHmXyD34Q_Tzb-aRxsPipO-e37-csVRhVM7IJh0C")
+                    set(gn_platform "windows-amd64")
+                    set(download_sha512 "FA764AA44EB6F48ED50E855B4DC1DD1ABE35E45FD4AAC7F059A35293A14894C1B591215E34FB0CE9362E646EA9463BA3B489EFB7EBBAA2693D14238B50E4E686")
+                else() # AMD64
+                    set(program_version "q5ExVHmXyD34Q_Tzb-aRxsPipO-e37-csVRhVM7IJh0C")
+                    set(gn_platform "windows-amd64")
+                    set(download_sha512 "FA764AA44EB6F48ED50E855B4DC1DD1ABE35E45FD4AAC7F059A35293A14894C1B591215E34FB0CE9362E646EA9463BA3B489EFB7EBBAA2693D14238B50E4E686")
+                endif()
+            endif()
         endif()
         set(tool_subdirectory "${program_version}")
         set(download_urls "${cipd_download_gn}/${gn_platform}/+/${program_version}")
@@ -247,17 +221,17 @@ function(vcpkg_find_acquire_program program)
     elseif(program STREQUAL "PYTHON3")
         if(CMAKE_HOST_WIN32)
             set(program_name python)
-            set(program_version 3.10.2)
+            set(program_version 3.10.7)
             if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
                 set(tool_subdirectory "python-${program_version}-x86")
                 set(download_urls "https://www.python.org/ftp/python/${program_version}/python-${program_version}-embed-win32.zip")
                 set(download_filename "python-${program_version}-embed-win32.zip")
-                set(download_sha512 d647d7141d1b13c899671b882e686a1b1cc6f759e5b7428ec858cdffd9ef019c78fb0b989174b98f30cb696297bfeff3d171f7eaabb339f5154886c030b8e4d9)
+                set(download_sha512 a69445906a909ce5f2554c544fe4251a8ab9c5028b531975b8c78fa8e98295b2bf06e1840f346a3c0edf485a7792c40c9d318bffd36b9c7829ac72b7cf8697bc)
             else()
                 set(tool_subdirectory "python-${program_version}-x64")
                 set(download_urls "https://www.python.org/ftp/python/${program_version}/python-${program_version}-embed-amd64.zip")
                 set(download_filename "python-${program_version}-embed-amd64.zip")
-                set(download_sha512 e04e14f3b5e96f120a3b0d5fac07b2982b9f3394aef4591b140e84ff97c8532e1f8bf3e613bdf5aec6afeac108b975e754bf9727354bcfaa6673fc89826eac37)
+                set(download_sha512 29b47f8073b54c092a2c8b39b09ab392f757a8c09149e8d2de043907fffb250b5f6801175e16fedb4fae7b6555822acdc57d81d13c2fea95ef0f6ed717f86cb9)
             endif()
             set(paths_to_search "${DOWNLOADS}/tools/python/${tool_subdirectory}")
             vcpkg_list(SET post_install_command "${CMAKE_COMMAND}" -E rm python310._pth)
@@ -321,6 +295,7 @@ function(vcpkg_find_acquire_program program)
         set(program_name ninja)
         set(program_version 1.10.2)
         set(supported_on_unix ON)
+        set(version_command --version)
         if(CMAKE_HOST_WIN32)
             set(download_filename "ninja-win-${program_version}.zip")
             set(tool_subdirectory "${program_version}-windows")
@@ -336,13 +311,17 @@ function(vcpkg_find_acquire_program program)
             set(paths_to_search "${DOWNLOADS}/tools/${tool_subdirectory}-freebsd")
             set(supported_on_unix OFF)
         else()
-            set(download_filename "ninja-linux-${program_version}.zip")
-            set(download_urls "https://github.com/ninja-build/ninja/releases/download/v${program_version}/ninja-linux.zip")
-            set(tool_subdirectory "${program_version}-linux")
-            set(paths_to_search "${DOWNLOADS}/tools/ninja-${program_version}-linux")
-            set(download_sha512 93e802e9c17fb59636cddde4bad1ddaadad624f4ecfee00d5c78790330a4e9d433180e795718cda27da57215ce643c3929cf72c85337ee019d868c56f2deeef3)
+            execute_process(COMMAND "uname" "-m" OUTPUT_VARIABLE HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+            if(HOST_ARCH MATCHES "x86_64|amd64|AMD64")
+                set(download_filename "ninja-linux-${program_version}.zip")
+                set(download_urls "https://github.com/ninja-build/ninja/releases/download/v${program_version}/ninja-linux.zip")
+                set(tool_subdirectory "${program_version}-linux")
+                set(paths_to_search "${DOWNLOADS}/tools/ninja-${program_version}-linux")
+                set(download_sha512 93e802e9c17fb59636cddde4bad1ddaadad624f4ecfee00d5c78790330a4e9d433180e795718cda27da57215ce643c3929cf72c85337ee019d868c56f2deeef3)
+            else()
+                set(version_command "") # somewhat hacky way to skip version check and use system binary
+            endif()
         endif()
-        set(version_command --version)
     elseif(program STREQUAL "NUGET")
         set(program_name nuget)
         set(tool_subdirectory "5.11.0")
@@ -403,8 +382,8 @@ function(vcpkg_find_acquire_program program)
         endif()
     elseif(program STREQUAL "CLANG")
         set(program_name clang)
-        set(tool_subdirectory "clang-12.0.0")
-        set(program_version 12.0.0)
+        set(tool_subdirectory "clang-15.0.6")
+        set(program_version 15.0.6)
         if(CMAKE_HOST_WIN32)
             set(paths_to_search
                 # Support LLVM in Visual Studio 2019
@@ -424,11 +403,11 @@ function(vcpkg_find_acquire_program program)
             if(host_arch MATCHES "64")
                 set(download_urls "https://github.com/llvm/llvm-project/releases/download/llvmorg-${program_version}/LLVM-${program_version}-win64.exe")
                 set(download_filename "LLVM-${program_version}-win64.7z.exe")
-                set(download_sha512 67a9b54abad5143fa5f79f0cfc184be1394c9fc894fa9cee709943cb6ccbde8f0ea6003d8fcc20eccf035631abe4009cc0f694ac84e7879331cebba8125e4c7f)
+                set(download_sha512 2dd6f3eea106f2b905e6658ea5ea12856d17285adbfba055edc2d6b6389c4c2f7aa001df5cb0d8fb84fa7fa47d5035a7fddf276523b472dd55f150ae25938768)
             else()
                 set(download_urls "https://github.com/llvm/llvm-project/releases/download/llvmorg-${program_version}/LLVM-${program_version}-win32.exe")
                 set(download_filename "LLVM-${program_version}-win32.7z.exe")
-                set(download_sha512 92fa5252fd08c1414ee6d71e2544cd2c44872124c47225f8d98b3af711d20e699f2888bc30642dfd00e005013da1607a593674fb4878951cc434694f9a119199)
+                set(download_sha512 90225D650EADB0E590A9912B479B46A575D41A19EB5F2DA03C4DC8B032DC0790222F0E3706DFE2A35C0E7747941972AC26CB47D3EB13730DB76168931F37E5F1)
             endif()
         endif()
         set(brew_package_name "llvm")
@@ -443,14 +422,15 @@ function(vcpkg_find_acquire_program program)
     elseif(program STREQUAL "GASPREPROCESSOR")
         set(raw_executable true)
         set(program_name gas-preprocessor)
-        set(tool_subdirectory "4daa6115")
         set(interpreter PERL)
         set(search_names "gas-preprocessor.pl")
         set(paths_to_search "${DOWNLOADS}/tools/gas-preprocessor/${tool_subdirectory}")
         set(rename_binary_to "gas-preprocessor.pl")
-        set(download_urls "https://raw.githubusercontent.com/FFmpeg/gas-preprocessor/4daa611556a0558dfe537b4f7ad80f7e50a079c1/gas-preprocessor.pl")
+        set(commit_id 9309c67acb535ca6248f092e96131d8eb07eefc1)
+        set(download_urls "https://raw.githubusercontent.com/FFmpeg/gas-preprocessor/${commit_id}/gas-preprocessor.pl")
+        string(SUBSTRING ${commit_id} 0 8 tool_subdirectory)
         set(download_filename "gas-preprocessor-${tool_subdirectory}.pl")
-        set(download_sha512 2737ba3c1cf85faeb1fbfe015f7bad170f43a857a50a1b3d81fa93ba325d481f73f271c5a886ff8b7eef206662e19f0e9ef24861dfc608b67b8ea8a2062dc061)
+        set(download_sha512 b4749cf8aa758e3f28d4b21803422a5c2588f5fc48cfd317564606b374f8d739c636067cf7a4956d7365d63b055bc6e7626c304857e6c9013d6b4a0db9d8ad4f)
     elseif(program STREQUAL "DARK")
         set(program_name dark)
         set(tool_subdirectory "wix311-binaries")
@@ -568,8 +548,30 @@ function(vcpkg_find_acquire_program program)
             set(apt_package_name pkg-config)
             set(paths_to_search "/bin" "/usr/bin" "/usr/local/bin")
         endif()
+    elseif(program STREQUAL "PATCHELF")
+        set(program_name patchelf)
+        set(program_version 0.14.5)
+        set(supported_on_unix ON)
+        if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+            execute_process(COMMAND "uname" "-m" OUTPUT_VARIABLE HOST_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+            if(HOST_ARCH STREQUAL "aarch64")
+                set(patchelf_platform "aarch64")
+                set(download_sha512 "3B5EB4405FAB1D5202728AA390DD9F059CD7AFD582BAD9C50383CAD605127BC77DFCE3F2F26E9714F6BD5CCFFD49D3973BA2F061D2E2931B6E1BD0C263B99E75")
+            elseif(HOST_ARCH STREQUAL "armv7l")
+                set(patchelf_platform "armv7l")
+                set(download_sha512 "30160d750784f5e8805bffe96ca80b40ed10441549e10f47b61e0d21b32979e01865cd770f1de9162988d4daabc6984dcdb7438f67bcd5eee76ad5f01b00276d")
+            else()
+                set(patchelf_platform "x86_64")
+                set(download_sha512 "5E983A25B3F3F3B8582D1DE6C7DE30812E8D6E58E96F711F33A2634D3FB1F2370531DA179927AA401328319F92465E6F76274A6F994D1DC54C74B98E704D0D29")
+            endif()
+            set(download_filename "${program_name}-${program_version}-${patchelf_platform}.tar.gz")
+            set(download_urls "https://github.com/NixOS/patchelf/releases/download/${program_version}/${download_filename}")
+            set(tool_subdirectory "${program_version}-${patchelf_platform}-linux")
+            set(paths_to_search "${DOWNLOADS}/tools/patchelf/${program_version}-${patchelf_platform}-linux/bin")
+        endif()
+        set(version_command --version)
     else()
-        message(FATAL "unknown tool ${program} -- unable to acquire.")
+        message(FATAL_ERROR "unknown tool ${program} -- unable to acquire.")
     endif()
 
     if("${program_name}" STREQUAL "")

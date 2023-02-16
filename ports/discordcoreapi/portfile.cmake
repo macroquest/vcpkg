@@ -1,14 +1,15 @@
 if(VCPKG_TARGET_IS_LINUX)
-    message(WARNING "Discordcoreapi only supports g++ 11 on linux.")
+    message(WARNING "DiscordCoreAPI only supports g++ 11 on linux.")
 endif()
 
 vcpkg_from_github(
 	OUT_SOURCE_PATH SOURCE_PATH
 	REPO RealTimeChris/DiscordCoreAPI
-	REF 6d7c899f0690513855119aa225259dccf17b10f0
-	SHA512 ff42ed8ae799b8f875158842c47fcb5612a5b8861dbfb442c97ab131d952ed59140b2d2431a0d389aefbecb122263f340ff9c8fb863466d0aa91875f8080616e
+	REF c8d4698d2c0ee818def85d63562585a218b2da70
+	SHA512 82a2bada44d1e2c2cc4638b885011a95189febd77bc4d3c26ce8c25005b8202d6c7cbb1f580dbcc1556dd0919f33cfb25127774f37cea17a544fbe31970618b5
 	HEAD_REF main
-    PATCHES fix-cert-installation.patch
+    PATCHES
+        0001-Add-extern-C-to-avcodec.patch
 )
 
 vcpkg_cmake_configure(
@@ -19,10 +20,6 @@ vcpkg_cmake_install()
 
 vcpkg_cmake_config_fixup(NO_PREFIX_CORRECTION)
 
-vcpkg_fixup_pkgconfig()
-
-vcpkg_copy_pdbs()
-
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include" "${CURRENT_PACKAGES_DIR}/debug/share")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
@@ -30,7 +27,7 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
 endif()
 
 file(
-	INSTALL "${SOURCE_PATH}/License"
+	INSTALL "${SOURCE_PATH}/License.md"
 	DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
 	RENAME copyright
 )
