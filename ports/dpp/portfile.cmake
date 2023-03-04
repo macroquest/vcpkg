@@ -1,16 +1,32 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO brainboxdotcc/DPP
-    REF cee27e000166b7aa5fce63f6c8ef25ded2f8bf27
-    SHA512  38716a2fcbfab43df34fc213c1901f077d4a5e1b9013027826b1d1c40ea5aa736a7f43c2a75773bd3c3b1ce5d3255526956becc469df93588b7ea4005f9f6d23
+    REF 25006668103d0e77252b45b3098ff457a8422189 #v10.0.23
+    SHA512 f15e21d62f226d1bd2cd769e2a83f735c925c27a13eaa3347714d38228f3015a82938fbed7a66101ed5d74f806c5244e212665500ecdd45be6d0a78bf76545a6
     HEAD_REF master
     PATCHES
-        make-pkgconfig-required.patch
+        mq-fix-static-build.patch
 )
+
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    set(BUILD_SHARED_LIBS OFF)
+else()
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
+if("opus" IN_LIST VCPKG_FEATURE_FLAGS)
+    set(BUILD_VOICE_SUPPORT ON)
+else()
+    set(BUILD_VOICE_SUPPORT OFF)
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
+    OPTIONS
+        "-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}"
+        "-DBUILD_VOICE_SUPPORT=${BUILD_VOICE_SUPPORT}"
+        "-DDPP_BUILD_TEST=OFF"
 )
 
 vcpkg_cmake_install()
