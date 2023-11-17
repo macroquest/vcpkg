@@ -3,6 +3,8 @@ vcpkg_from_github(
     REPO brainboxdotcc/DPP
     REF "v${VERSION}"
     SHA512 497451c880c92356aa7884bcd7a89a8642ab54a8141fb0b24de85a46d6d00c74e7f24cc09bd5ad9b9faff58f7837825486b261d75b63e630bf114fde5813d1e1
+    PATCHES
+        mq-guard-redef.patch
 )
 
 vcpkg_cmake_configure(
