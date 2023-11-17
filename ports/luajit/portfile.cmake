@@ -12,6 +12,7 @@ vcpkg_from_github(
     PATCHES
         msvcbuild.patch
         003-do-not-set-macosx-deployment-target.patch
+        mq-debug-release-options.patch
         ${extra_patches}
 )
 
