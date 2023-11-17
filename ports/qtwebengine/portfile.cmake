@@ -1,9 +1,7 @@
 set(SCRIPT_PATH "${CURRENT_INSTALLED_DIR}/share/qtbase")
 include("${SCRIPT_PATH}/qt_install_submodule.cmake")
 
-set(${PORT}_PATCHES
-        vector.patch
-    )
+set(${PORT}_PATCHES "")
 
 set(TOOL_NAMES gn QtWebEngineProcess qwebengine_convert_dict)
 
@@ -64,8 +62,7 @@ vcpkg_add_to_path(PREPEND "${FLEX_DIR}")
 get_filename_component(BISON_DIR "${BISON}" DIRECTORY )
 vcpkg_add_to_path(PREPEND "${BISON_DIR}")
 
-vcpkg_find_acquire_program(PYTHON3)
-x_vcpkg_get_python_packages(PYTHON_EXECUTABLE "${PYTHON3}" PACKAGES html5lib)
+x_vcpkg_get_python_packages(PYTHON_VERSION "3" PACKAGES html5lib OUT_PYTHON_VAR PYTHON3)
 
 vcpkg_add_to_path(PREPEND "${CURRENT_HOST_INSTALLED_DIR}/tools/gperf")
 set(GPERF "${CURRENT_HOST_INSTALLED_DIR}/tools/gperf/gperf${VCPKG_HOST_EXECUTABLE_SUFFIX}")
@@ -107,6 +104,8 @@ qt_cmake_configure( DISABLE_PARALLEL_CONFIGURE # due to in source changes.
                         -DBISON_EXECUTABLE=${BISON}
                         -DFLEX_EXECUTABLE=${FLEX}
                         -DNodejs_EXECUTABLE=${NODEJS}
+                        -DPython3_EXECUTABLE=${PYTHON3}
+                        -DQT_FEATURE_webengine_jumbo_build=0
                    OPTIONS_DEBUG ${_qis_CONFIGURE_OPTIONS_DEBUG}
                    OPTIONS_RELEASE ${_qis_CONFIGURE_OPTIONS_RELEASE})
 

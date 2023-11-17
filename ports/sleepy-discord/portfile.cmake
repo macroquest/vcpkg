@@ -14,6 +14,7 @@ vcpkg_from_github(
     HEAD_REF develop
     PATCHES
         MQ2Discord-0001-Rate-Limit-Check.patch
+        fix-messing-header.patch
 )
 
 # Handle version data here to prevent issues from doing this twice in parallel
@@ -34,6 +35,7 @@ vcpkg_cmake_configure(
         -DSLEEPY_VCPKG=ON 
         -DAUTO_DOWNLOAD_LIBRARY=OFF 
         -DUSE_BOOST_ASIO=ON
+        -DCMAKE_CXX_STANDARD=17
         ${FEATURE_OPTIONS}
 )
 vcpkg_cmake_install()
@@ -42,4 +44,4 @@ vcpkg_copy_pdbs()
 
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/sleepy-discord)
 
-file(INSTALL ${SOURCE_PATH}/LICENSE.md DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.md")

@@ -1,8 +1,9 @@
+string(REPLACE "." "_" curl_version "curl-${VERSION}")
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO curl/curl
-    REF curl-7_87_0
-    SHA512 3769726f681bc680a0c95819b353025d2ad3fc5688611453f3e2673685c4f2abc54e02327d947c30e50b5b76043b1841f66115102b98b8ffafc9c225308e1575
+    REF "${curl_version}"
+    SHA512 c8550fef49e2f1571f7392a351e10bbdb23821069db1e988094fe27fe0a881a265ba69a2cd34462e630563d153462a975ef70472ba39adaad1c5e5ab45cf7f4f
     HEAD_REF master
     PATCHES
         0002_fix_uwp.patch
@@ -13,6 +14,8 @@ vcpkg_from_github(
         mbedtls-ws2_32.patch
         export-components.patch
         mq-prefer-schannel.patch
+        dependencies.patch
+        cmake-config.patch # https://github.com/curl/curl/pull/11913
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -33,6 +36,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         winidn      USE_WIN32_IDN
         winldap     USE_WIN32_LDAP
         websockets  ENABLE_WEBSOCKETS
+        zstd        CURL_ZSTD
     INVERTED_FEATURES
         non-http    HTTP_ONLY
         winldap     CURL_DISABLE_LDAP # Only WinLDAP support ATM
@@ -71,6 +75,7 @@ vcpkg_cmake_configure(
         -DENABLE_MANUAL=OFF
         -DCURL_CA_FALLBACK=ON
         -DCURL_USE_LIBPSL=OFF
+        -DCMAKE_DISABLE_FIND_PACKAGE_Perl=ON
     OPTIONS_DEBUG
         -DENABLE_DEBUG=ON
 )
@@ -124,4 +129,21 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
 endif()
 
 file(INSTALL "${CURRENT_PORT_DIR}/vcpkg-cmake-wrapper.cmake" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-file(INSTALL "${SOURCE_PATH}/COPYING" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+file(INSTALL "${CURRENT_PORT_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+
+file(READ "${SOURCE_PATH}/lib/krb5.c" krb5_c)
+string(REGEX REPLACE "#i.*" "" krb5_c "${krb5_c}")
+set(krb5_copyright "${CURRENT_BUILDTREES_DIR}/krb5.c Notice")
+file(WRITE "${krb5_copyright}" "${krb5_c}")
+
+file(READ "${SOURCE_PATH}/lib/inet_ntop.c" inet_ntop_c)
+string(REGEX REPLACE "#i.*" "" inet_ntop_c "${inet_ntop_c}")
+set(inet_ntop_copyright "${CURRENT_BUILDTREES_DIR}/inet_ntop.c and inet_pton.c Notice")
+file(WRITE "${inet_ntop_copyright}" "${inet_ntop_c}")
+
+vcpkg_install_copyright(
+    FILE_LIST
+        "${SOURCE_PATH}/COPYING"
+        "${krb5_copyright}"
+        "${inet_ntop_copyright}"
+)

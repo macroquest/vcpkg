@@ -1,10 +1,9 @@
-vcpkg_minimum_required(VERSION 2022-10-12) # for ${VERSION}
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ffmpeg/ffmpeg
-    REF n${VERSION}
-    SHA512 1b90c38b13149f2de7618ad419adc277afd5e65bbf52b849a7245aec0f92f73189c8547599dba8408b8828a767c1120f132727b57cd6231cd8b81de2471a4b8b
+    REF "n${VERSION}"
+    SHA512 abb9207364553248278f8e23e3d565da51ecb0ae9b20edda41624b314541bc3f53a8d6aac7fa5455168d2323d5d70d5a8acbe059f33423fbc2563e1a6cd0348b
     HEAD_REF master
     PATCHES
         0001-create-lib-libraries.patch
@@ -23,50 +22,25 @@ vcpkg_from_github(
         0022-fix-iconv.patch
 )
 
-if (SOURCE_PATH MATCHES " ")
+if(SOURCE_PATH MATCHES " ")
     message(FATAL_ERROR "Error: ffmpeg will not build with spaces in the path. Please use a directory with no spaces")
 endif()
 
-vcpkg_find_acquire_program(NASM)
-get_filename_component(NASM_EXE_PATH "${NASM}" DIRECTORY)
-vcpkg_add_to_path("${NASM_EXE_PATH}")
-
-if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
-    #We're assuming that if we're building for Windows we're using MSVC
-    set(INCLUDE_VAR "INCLUDE")
-    set(LIB_PATH_VAR "LIB")
-else()
-    set(INCLUDE_VAR "CPATH")
-    set(LIB_PATH_VAR "LIBRARY_PATH")
+if(NOT VCPKG_TARGET_ARCHITECTURE STREQUAL "wasm32")
+    vcpkg_find_acquire_program(NASM)
+    get_filename_component(NASM_EXE_PATH "${NASM}" DIRECTORY)
+    vcpkg_add_to_path("${NASM_EXE_PATH}")
 endif()
 
 set(OPTIONS "--enable-pic --disable-doc --enable-debug --enable-runtime-cpudetect --disable-autodetect")
 
-if(VCPKG_TARGET_IS_ANDROID)
-    # Disable asm and x86asm on all android targets because they trigger build failures:
-    # arm64 Android build fails with 'relocation R_AARCH64_ADR_PREL_PG_HI21 cannot be used against symbol ff_cos_32; recompile with -fPIC'
-    # x86 Android build fails with 'error: inline assembly requires more registers than available'.
-    # x64 Android build fails with 'relocation R_X86_64_PC32 cannot be used against symbol ff_h264_cabac_tables; recompile with -fPIC'
-    set(OPTIONS "${OPTIONS} --disable-asm --disable-x86asm")
-else()
-    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-        set(OPTIONS "${OPTIONS} --disable-asm --disable-x86asm")
-    endif()
-    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-        set(OPTIONS "${OPTIONS} --enable-asm --disable-x86asm")
-    endif()
-    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86" OR VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-        set(OPTIONS "${OPTIONS} --enable-asm --enable-x86asm")
-    endif()
-endif()
-
-if(VCPKG_TARGET_IS_WINDOWS)
+if(VCPKG_HOST_IS_WINDOWS)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES automake1.16)
     set(SHELL "${MSYS_ROOT}/usr/bin/bash.exe")
     vcpkg_add_to_path("${MSYS_ROOT}/usr/share/automake-1.16")
     string(APPEND OPTIONS " --pkg-config=${CURRENT_HOST_INSTALLED_DIR}/tools/pkgconf/pkgconf${VCPKG_HOST_EXECUTABLE_SUFFIX}")
 else()
-    set(SHELL /bin/sh)
+    find_program(SHELL bash)
 endif()
 
 if(VCPKG_TARGET_IS_MINGW)
@@ -88,6 +62,11 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
 else()
 endif()
 
+if(VCPKG_TARGET_IS_OSX)
+    list(JOIN VCPKG_OSX_ARCHITECTURES " " OSX_ARCHS)
+    list(LENGTH VCPKG_OSX_ARCHITECTURES OSX_ARCH_COUNT)
+endif()
+
 vcpkg_cmake_get_vars(cmake_vars_file)
 include("${cmake_vars_file}")
 if(VCPKG_DETECTED_MSVC)
@@ -104,8 +83,6 @@ string(APPEND VCPKG_COMBINED_C_FLAGS_DEBUG " -I \"${CURRENT_INSTALLED_DIR}/inclu
 string(APPEND VCPKG_COMBINED_C_FLAGS_RELEASE " -I \"${CURRENT_INSTALLED_DIR}/include\"")
 
 ## Setup vcpkg toolchain
-
-set(ENV_LIB_PATH "$ENV{${LIB_PATH_VAR}}")
 
 set(prog_env "")
 
@@ -165,10 +142,18 @@ if(VCPKG_DETECTED_CMAKE_AR)
     list(APPEND prog_env "${AR_path}")
 endif()
 
+if(VCPKG_DETECTED_CMAKE_RANLIB)
+    get_filename_component(RANLIB_path "${VCPKG_DETECTED_CMAKE_RANLIB}" DIRECTORY)
+    get_filename_component(RANLIB_filename "${VCPKG_DETECTED_CMAKE_RANLIB}" NAME)
+    set(ENV{RANLIB} "${RANLIB_filename}")
+    string(APPEND OPTIONS " --ranlib=${RANLIB_filename}")
+    list(APPEND prog_env "${RANLIB_path}")
+endif()
+
 list(REMOVE_DUPLICATES prog_env)
 vcpkg_add_to_path(PREPEND ${prog_env})
 
-# More? RANLIB OBJCC STRIP BIN2C
+# More? OBJCC STRIP BIN2C
 
 file(REMOVE_RECURSE "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg" "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 
@@ -409,7 +394,7 @@ if("openssl" IN_LIST FEATURES)
     set(OPTIONS "${OPTIONS} --enable-openssl")
 else()
     set(OPTIONS "${OPTIONS} --disable-openssl")
-    if(VCPKG_TARGET_IS_WINDOWS)
+    if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_UWP)
         string(APPEND OPTIONS " --enable-schannel")
     elseif(VCPKG_TARGET_IS_OSX)
         string(APPEND OPTIONS " --enable-securetransport")
@@ -524,7 +509,7 @@ else()
     set(OPTIONS "${OPTIONS} --disable-libmfx")
 endif()
 
-set(OPTIONS_CROSS " --enable-cross-compile")
+set(OPTIONS_CROSS "--enable-cross-compile")
 
 # ffmpeg needs --cross-prefix option to use appropriate tools for cross-compiling.
 if(VCPKG_DETECTED_CMAKE_C_COMPILER MATCHES "([^\/]*-)gcc$")
@@ -532,9 +517,9 @@ if(VCPKG_DETECTED_CMAKE_C_COMPILER MATCHES "([^\/]*-)gcc$")
 endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-    string(APPEND OPTIONS_CROSS " --arch=x86_64")
+    set(BUILD_ARCH "x86_64")
 else()
-    string(APPEND OPTIONS_CROSS " --arch=${VCPKG_TARGET_ARCHITECTURE}")
+    set(BUILD_ARCH ${VCPKG_TARGET_ARCHITECTURE})
 endif()
 
 if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm" OR VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
@@ -577,16 +562,22 @@ message(STATUS "Building Options: ${OPTIONS}")
 
 # Release build
 if (NOT VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "release")
+    if (VCPKG_DETECTED_MSVC)
+        set(OPTIONS_RELEASE "${OPTIONS_RELEASE} --extra-ldflags=-libpath:\"${CURRENT_INSTALLED_DIR}/lib\"")
+    else()
+        set(OPTIONS_RELEASE "${OPTIONS_RELEASE} --extra-ldflags=-L\"${CURRENT_INSTALLED_DIR}/lib\"")
+    endif()
     message(STATUS "Building Release Options: ${OPTIONS_RELEASE}")
-    set(ENV{${LIB_PATH_VAR}} "${CURRENT_INSTALLED_DIR}/lib${VCPKG_HOST_PATH_SEPARATOR}${ENV_LIB_PATH}")
     set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/lib/pkgconfig")
     message(STATUS "Building ${PORT} for Release")
     file(MAKE_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
     # We use response files here as the only known way to handle spaces in paths
     set(crsp "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/cflags.rsp")
-    file(WRITE "${crsp}" "${VCPKG_COMBINED_C_FLAGS_RELEASE}")
+    string(REGEX REPLACE "-arch [A-Za-z0-9_]+" "" VCPKG_COMBINED_C_FLAGS_RELEASE_SANITIZED "${VCPKG_COMBINED_C_FLAGS_RELEASE}")
+    file(WRITE "${crsp}" "${VCPKG_COMBINED_C_FLAGS_RELEASE_SANITIZED}")
     set(ldrsp "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/ldflags.rsp")
-    file(WRITE "${ldrsp}" "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_RELEASE}")
+    string(REGEX REPLACE "-arch [A-Za-z0-9_]+" "" VCPKG_COMBINED_SHARED_LINKER_FLAGS_RELEASE_SANITIZED "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_RELEASE}")
+    file(WRITE "${ldrsp}" "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_RELEASE_SANITIZED}")
     set(ENV{CFLAGS} "@${crsp}")
     # All tools except the msvc arm{,64} assembler accept @... as response file syntax.
     # For that assembler, there is no known way to pass in flags. We must hope that not passing flags will work acceptably.
@@ -612,16 +603,22 @@ endif()
 
 # Debug build
 if (NOT VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "debug")
+    if (VCPKG_DETECTED_MSVC)
+        set(OPTIONS_DEBUG "${OPTIONS_DEBUG} --extra-ldflags=-libpath:\"${CURRENT_INSTALLED_DIR}/debug/lib\"")
+    else()
+        set(OPTIONS_DEBUG "${OPTIONS_DEBUG} --extra-ldflags=-L\"${CURRENT_INSTALLED_DIR}/debug/lib\"")
+    endif()
     message(STATUS "Building Debug Options: ${OPTIONS_DEBUG}")
-    set(ENV{${LIB_PATH_VAR}} "${CURRENT_INSTALLED_DIR}/debug/lib${VCPKG_HOST_PATH_SEPARATOR}${ENV_LIB_PATH}")
     set(ENV{LDFLAGS} "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_DEBUG}")
     set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig")
     message(STATUS "Building ${PORT} for Debug")
     file(MAKE_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg")
     set(crsp "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/cflags.rsp")
-    file(WRITE "${crsp}" "${VCPKG_COMBINED_C_FLAGS_DEBUG}")
+    string(REGEX REPLACE "-arch [A-Za-z0-9_]+" "" VCPKG_COMBINED_C_FLAGS_DEBUG_SANITIZED "${VCPKG_COMBINED_C_FLAGS_DEBUG}")
+    file(WRITE "${crsp}" "${VCPKG_COMBINED_C_FLAGS_DEBUG_SANITIZED}")
     set(ldrsp "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/ldflags.rsp")
-    file(WRITE "${ldrsp}" "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_DEBUG}")
+    string(REGEX REPLACE "-arch [A-Za-z0-9_]+" "" VCPKG_COMBINED_SHARED_LINKER_FLAGS_DEBUG_SANITIZED "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_DEBUG}")
+    file(WRITE "${ldrsp}" "${VCPKG_COMBINED_SHARED_LINKER_FLAGS_DEBUG_SANITIZED}")
     set(ENV{CFLAGS} "@${crsp}")
     if(NOT VCPKG_DETECTED_MSVC OR NOT VCPKG_TARGET_ARCHITECTURE MATCHES "^arm")
         set(ENV{ASFLAGS} "@${crsp}")

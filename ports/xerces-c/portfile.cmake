@@ -16,15 +16,23 @@ vcpkg_check_features(
     OUT_FEATURE_OPTIONS options
     FEATURES
         icu     CMAKE_REQUIRE_FIND_PACKAGE_ICU
+        network network
     INVERTED_FEATURES
         icu     CMAKE_DISABLE_FIND_PACKAGE_ICU
 )
 if("icu" IN_LIST FEATURES)
-    vcpkg_list(APPEND options transcoder=icu)
+    vcpkg_list(APPEND options -Dtranscoder=icu)
 elseif(VCPKG_TARGET_IS_WINDOWS)
-    vcpkg_list(APPEND options transcoder=windows)
+    vcpkg_list(APPEND options -Dtranscoder=windows)
 elseif(VCPKG_TARGET_IS_OSX)
-    vcpkg_list(APPEND options transcoder=macosunicodeconverter)
+    vcpkg_list(APPEND options -Dtranscoder=macosunicodeconverter)
+elseif(VCPKG_HOST_IS_OSX)
+    # Because of a bug in the transcoder selection script, the option
+    # "macosunicodeconverter" is always selected when building on macOS,
+    # regardless of the target platform. This breaks cross-compiling.
+    # As a workaround we force "iconv", which should at least work for iOS.
+    # Upstream fix: https://github.com/apache/xerces-c/pull/52
+    vcpkg_list(APPEND options -Dtranscoder=iconv)
 else()
     # xercesc chooses gnuiconv or iconv (cmake/XercesTranscoderSelection.cmake)
 endif()
@@ -40,6 +48,8 @@ vcpkg_cmake_configure(
         -DDISABLE_SAMPLES=ON
         -DCMAKE_DISABLE_FIND_PACKAGE_CURL=ON
         ${options}
+    MAYBE_UNUSED_VARIABLES
+        CMAKE_DISABLE_FIND_PACKAGE_CURL
 )
 
 vcpkg_cmake_install()
@@ -68,3 +78,5 @@ if (VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
 endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")

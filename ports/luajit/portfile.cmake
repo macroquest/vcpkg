@@ -1,3 +1,7 @@
+set(extra_patches "")
+if (VCPKG_TARGET_IS_OSX)
+	list(APPEND extra_patches 005-do-not-pass-ld-e-macosx.patch)
+endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
@@ -7,6 +11,8 @@ vcpkg_from_github(
     HEAD_REF v2.1
     PATCHES
         msvcbuild.patch
+        003-do-not-set-macosx-deployment-target.patch
+        ${extra_patches}
 )
 
 vcpkg_cmake_get_vars(cmake_vars_file)
