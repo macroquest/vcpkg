@@ -5,7 +5,6 @@ vcpkg_from_github(
     SHA512 db9a4f13b6c39ffde759db99bcdfe5e2dbe4231e73b29eb906a3fa78d6b8ec66920b8bd4371df17ae21b7b562472a236bc4435678f3af92b6496be090074181d
     HEAD_REF v1.x
     PATCHES
-        fmt-header.patch # https://github.com/gabime/spdlog/pull/2545
         mq-tweakme.patch
 )
 
