@@ -1,7 +1,6 @@
 {
   "name": "atl",
-  "version-string": "0",
-  "port-version": 1,
-  "description": "a stub package that ensures VS has ATL installed.",
+  "version": "0",
+  "description": "A stub package that ensures Visual Studio has Active Template Library (ATL) installed.",
   "supports": "windows"
 }
