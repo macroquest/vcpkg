@@ -1,0 +1,12 @@
+diff --git a/include/sol/types.hpp b/include/sol/types.hpp
+--- a/include/sol/types.hpp
++++ b/include/sol/types.hpp
+@@ -892,7 +892,7 @@
+         constexpr inline bool is_transparent_argument_v = is_transparent_argument<T>::value;
+ 
+         template <typename T>
+-        struct is_variadic_arguments : meta::any<std::is_same<T, variadic_args>, meta::is_optional<T>> { };
++        struct is_variadic_arguments : meta::any<std::is_same<T, variadic_args>, meta::is_optional<std::decay_t<T>>> { };
+ 
+         template <typename T>
+         struct is_container
