@@ -6,10 +6,6 @@
   "license": "MIT",
   "dependencies": [
     {
-      "name": "lua",
-      "platform": "windows"
-    },
-    {
       "name": "vcpkg-cmake",
       "host": true
     },

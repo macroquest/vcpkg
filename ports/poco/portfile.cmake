@@ -2,8 +2,8 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pocoproject/poco
     REF "poco-${VERSION}-release"
-    SHA512 dfb7bc3241c78216ebd9eeacd6d091c069a342a7f92e73b348b07ff817997a16c8452fdb954954a182f65140567fc2e910036efb50d55d327a4de8063bac005b
-    HEAD_REF master
+    SHA512 084064fb462c9e7993d069ebdf395802af900ed92c5b294465a2c246162bb86caa3505985de329e8110d3e9fb3bc39ae9536d523843729d4ed5ce00c35289d92
+    HEAD_REF devel
     PATCHES
         # Fix embedded copy of pcre in static linking mode
         0001-static-pcre.patch
@@ -86,7 +86,7 @@ vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
 # Move apps to the tools folder
-vcpkg_copy_tools(TOOL_NAMES cpspc f2cpsp PocoDoc tec arc AUTO_CLEAN)
+vcpkg_copy_tools(TOOL_NAMES cpspc f2cpsp PocoDoc tec poco-arc AUTO_CLEAN)
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")

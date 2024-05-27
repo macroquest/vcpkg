@@ -4,16 +4,16 @@ if ("docking-experimental" IN_LIST FEATURES)
     vcpkg_from_github(
        OUT_SOURCE_PATH SOURCE_PATH
        REPO ocornut/imgui
-       REF a1b60fc1f5589d498ab1080c2572da725fcbd0e3
-       SHA512 ac6117f6adf9418af3a2db5392f1316be50a94c38e78cd1eadc0e0a71dfbb5536507aaf4d9d3b3468b5a30ebf143b806e2774f274e2098e1217ed93080fe81c7
+       REF "v${VERSION}-docking"
+       SHA512 f4e97f8a191276b1deb1510cb9136ab7a9a4abc029727f752dff8c01bb6af4a692b2239de84839aa39aa359220f08ffe9bdff01b57942dd6e01183ec6778cfa7
        HEAD_REF docking
        )
 else()
     vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ocornut/imgui
-    REF v${VERSION}
-    SHA512 42021b06b611b58222b09fab8db2c34e992c3dc4fbaa175e09833c66c90d04b4a4e7def16a732535335c0ac5ff014d235835511a5d9a76d32b4395b302146919
+    REF "v${VERSION}"
+    SHA512 c9ff56ec6f8eb05b5034bb0b886568e843743a4313e36613db214f6080506703d5ed2ee606c88cd8957e73575e2b0e39deb52e1ac0c1a6e0a9fe38bca5e6dc0e
     HEAD_REF master
     )
 endif()
@@ -24,6 +24,7 @@ file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES 
     allegro5-binding            IMGUI_BUILD_ALLEGRO5_BINDING
+    android-binding             IMGUI_BUILD_ANDROID_BINDING
     dx9-binding                 IMGUI_BUILD_DX9_BINDING
     dx10-binding                IMGUI_BUILD_DX10_BINDING
     dx11-binding                IMGUI_BUILD_DX11_BINDING
