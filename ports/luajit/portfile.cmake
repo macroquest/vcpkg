@@ -24,8 +24,12 @@ if(VCPKG_DETECTED_MSVC)
     # minilua tool with the target toolchain. This will work for native builds and
     # for targeting x86 from x64 hosts. (UWP and ARM64 is unsupported.)
     vcpkg_list(SET options)
+    set(PKGCONFIG_CFLAGS "")
     if (VCPKG_LIBRARY_LINKAGE STREQUAL "static")
         list(APPEND options "MSVCBUILD_OPTIONS=static")
+        set(PKGCONFIG_CFLAGS "/DLUAJIT_ENABLE_LUA52COMPAT")
+    else()
+        set(PKGCONFIG_CFLAGS "/DLUA_BUILD_AS_DLL=1")
     endif()
 
     vcpkg_install_nmake(SOURCE_PATH "${SOURCE_PATH}"
