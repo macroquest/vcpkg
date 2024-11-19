@@ -6,6 +6,7 @@ vcpkg_from_github(
     HEAD_REF v1.x
     PATCHES
         mq-tweakme.patch
+        fix-msvc-utf8.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
