@@ -1,10 +1,12 @@
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO krb5/krb5
     REF krb5-${VERSION}-final
-    SHA512 184ef8645d7e17f30a8e3d4005364424d2095b3d0c96f26ecef0c2dd2f3a096a0dd40558ed113121483717e44f6af41e71be0e5e079c76a205535d0c11a2ea34
+    SHA512 4abfc37679483727fdad827afcf53729e6316febdf985a70133ee1dabaf8516e7fa771c1cfbc8fd557fed868c50f16b26bb59939ec091c2dd7019d0b2234ef1f
     HEAD_REF master
+    PATCHES
+        static-deps.diff
+        define-des-zeroblock.diff
 )
 
 if (VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
@@ -17,6 +19,8 @@ if (VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
         SOURCE_PATH "${SOURCE_PATH}/src"
         PROJECT_NAME Makefile.in
         TARGET prep-windows
+        OPTIONS_RELEASE
+            "NODEBUG=1"
     )
     file(REMOVE_RECURSE "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}")
     file(COPY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/" DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}")
@@ -28,6 +32,7 @@ if (VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
             "NO_LEASH=1"
         OPTIONS_RELEASE
             "KRB_INSTALL_DIR=${CURRENT_PACKAGES_DIR}"
+            "NODEBUG=1"
         OPTIONS_DEBUG
             "KRB_INSTALL_DIR=${CURRENT_PACKAGES_DIR}/debug"
     )
@@ -49,7 +54,7 @@ if (VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
     )
     vcpkg_copy_tools(
         TOOL_NAMES ${tools}
-        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/bin"        
+        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/bin"
         AUTO_CLEAN
     )
     foreach(tool_name ${tools})
@@ -78,6 +83,8 @@ else()
         SOURCE_PATH "${SOURCE_PATH}/src"
         AUTOCONFIG
         OPTIONS
+            --disable-nls
+            --with-tls-impl=no
             "CFLAGS=-fcommon \$CFLAGS"
     )
     vcpkg_install_make()
@@ -94,13 +101,22 @@ vcpkg_fixup_pkgconfig()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/var")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/krb5/cat1")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/krb5/cat5")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/krb5/cat7")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/krb5/cat8")
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/lib/krb5/")
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/lib/krb5/")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/var")
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/var")
+
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE
+        "${CURRENT_PACKAGES_DIR}/debug/lib/krb5/"
+        "${CURRENT_PACKAGES_DIR}/lib/krb5/"
+    )
+endif()
+
+if(VCPKG_BUILD_TYPE)
+  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
+endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/NOTICE")

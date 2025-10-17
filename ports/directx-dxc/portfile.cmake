@@ -1,7 +1,7 @@
 set(VCPKG_POLICY_DLLS_IN_STATIC_LIBRARY enabled)
 
-set(DIRECTX_DXC_TAG v1.8.2403.2)
-set(DIRECTX_DXC_VERSION 2024_03_29)
+set(DIRECTX_DXC_TAG v1.8.2505.1)
+set(DIRECTX_DXC_VERSION 2025_07_14)
 
 if (NOT VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
    message(STATUS "Note: ${PORT} always requires dynamic library linkage at runtime.")
@@ -11,13 +11,13 @@ if (VCPKG_TARGET_IS_LINUX)
     vcpkg_download_distfile(ARCHIVE
         URLS "https://github.com/microsoft/DirectXShaderCompiler/releases/download/${DIRECTX_DXC_TAG}/linux_dxc_${DIRECTX_DXC_VERSION}.x86_64.tar.gz"
         FILENAME "linux_dxc_${DIRECTX_DXC_VERSION}.tar.gz"
-        SHA512 5d62ad6e05ffbffdd46e45ad4cf1aa0cd16ab240798a00a4f9e46ec51a4cdff2aeb19cca8167a20ce384b42a6a6ec34e3fde1a75cc08b5f0ff2dac42edda826b
+        SHA512 4c4138f6720396c71474f3eef96f0d0b510fb612d0183c3b77588c42433889cc0f07fd4549538e9746b4066a2c83de40a6bc9acb7f9bbcd97b7e4ce1a07031ef
     )
 else()
     vcpkg_download_distfile(ARCHIVE
         URLS "https://github.com/microsoft/DirectXShaderCompiler/releases/download/${DIRECTX_DXC_TAG}/dxc_${DIRECTX_DXC_VERSION}.zip"
         FILENAME "dxc_${DIRECTX_DXC_VERSION}.zip"
-        SHA512 d8d33aaf9d1399d63237965567d179236edf6b4a003270ecd03fc5e31710995a68df74357a3059eafe03bd8b9e4fcaa5b540adb53e7360db455016164cfac052
+        SHA512 69dd74ee2bc8a7ac569fa71351209412f74ef901c58dc59d413277e3129ce78d31dbca0996c2910048bfd0575e7a10655d89d361b5a2ed2963c831385711380f
     )
 endif()
 
@@ -56,11 +56,20 @@ if (VCPKG_TARGET_IS_LINUX)
 
   file(INSTALL
     "${PACKAGE_PATH}/bin/dxc"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/")
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/"
+    FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE)
 
   set(dll_name_dxc "libdxcompiler.so")
   set(dll_name_dxil "libdxil.so")
   set(dll_dir  "lib")
+  if(NOT DEFINED VCPKG_BUILD_TYPE)
+    set(dll_debug_dir "debug/lib")
+  else()
+    set(dll_debug_dir "lib")
+  endif()
   set(lib_name "libdxcompiler.so")
   set(tool_path "tools/${PORT}/dxc")
 else()
@@ -108,6 +117,7 @@ else()
   set(dll_name_dxc "dxcompiler.dll")
   set(dll_name_dxil "dxil.dll")
   set(dll_dir  "bin")
+  set(dll_debug_dir "bin")
   set(lib_name "dxcompiler.lib")
   set(tool_path "tools/${PORT}/dxc.exe")
 endif()

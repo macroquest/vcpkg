@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO an-tao/trantor
     REF "v${VERSION}"
-    SHA512 2dba27efad95155a76968959d9bd2510be8502b9424716493f385aebbce2481553cc8fae283076029aed4bef6f0aadb0bec3f9acb98fbca3ef4d49b936558f8c
+    SHA512 a875e5bf8c8d871d1a3ddeeb79891773eed4f13772aa8c09ce6bdd60fa7af621eed6986935c0b70b58e790618934ca82a7ebd4ba5faf2b534b8ecb6f74d6bad1
     HEAD_REF master
     PATCHES
         000-fix-deps.patch

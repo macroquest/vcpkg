@@ -19,6 +19,7 @@ vcpkg_extract_source_archive(
         misc-fixes.patch
         remove_unnecessary_boost_dependency.diff
         force-cpp11.patch
+        fix-cmake4.patch
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/cmake/modules")
@@ -57,7 +58,7 @@ file(REMOVE_RECURSE
 
 if(WITH_UTILITIES)
     set(tools lasinfo lasblock las2las las2txt txt2las ts2las)
-    if(NOT WIN32)
+    if(NOT VCPKG_TARGET_IS_WINDOWS)
         list(APPEND tools las2col las2pg)
     endif()
     vcpkg_copy_tools(TOOL_NAMES ${tools} AUTO_CLEAN)

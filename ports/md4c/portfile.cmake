@@ -1,25 +1,23 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mity/md4c
-    REF release-0.4.8
-    SHA512 c939fdadf3e05c32c570cf9a5c0a02f83afaf4dfacf0f4505fcf12c6e24ffe0cd1372c207ff47cf2a489b02f24c5f20bb5f1361453c847c5464225cc7fcdb5ab
+    REF "release-${VERSION}"
+    SHA512 30607ba39d6c59329f5a56a90cd816ff60b82ea752ac2b9df356d756529cfc49170019fae5df32fa94afc0e2a186c66eaf56fa6373d18436c06ace670675ba85
+    HEAD_REF master
+    PATCHES
+        "cmake.patch"
 )
 
-vcpkg_configure_cmake(
-    SOURCE_PATH ${SOURCE_PATH}
+vcpkg_cmake_configure(
+    SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS -DBUILD_MD2HTML_EXECUTABLE=OFF
 )
 
-vcpkg_install_cmake()
-
-vcpkg_fixup_cmake_targets(CONFIG_PATH "lib/cmake/md4c")
-
-vcpkg_copy_pdbs()
+vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/md4c")
+vcpkg_fixup_pkgconfig()
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.md")
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
-endif()
-
-file(INSTALL ${SOURCE_PATH}/LICENSE.md DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/usage" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" COPYONLY)

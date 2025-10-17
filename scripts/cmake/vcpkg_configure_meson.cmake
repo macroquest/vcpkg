@@ -152,6 +152,14 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
             OUTPUT_STRIP_TRAILING_WHITESPACE
             COMMAND_ERROR_IS_FATAL ANY)
 
+        if(CMAKE_HOST_SOLARIS)
+            execute_process(
+                COMMAND isainfo -k
+                OUTPUT_VARIABLE MACHINE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                COMMAND_ERROR_IS_FATAL ANY)
+        endif()
+
         # Show real machine architecture to visually understand whether we are in a native Apple Silicon terminal or running under Rosetta emulation
         debug_message("Machine: ${MACHINE}")
 
@@ -189,13 +197,13 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
 
     set(build "[build_machine]\n") # Machine the build is performed on
     string(APPEND build "endian = 'little'\n")
-    if(WIN32)
+    if(CMAKE_HOST_WIN32)
         string(APPEND build "system = 'windows'\n")
-    elseif(DARWIN)
+    elseif(CMAKE_HOST_APPLE)
         string(APPEND build "system = 'darwin'\n")
-    elseif(CYGWIN)
+    elseif(VCPKG_HOST_IS_CYGWIN)
         string(APPEND build "system = 'cygwin'\n")
-    elseif(UNIX)
+    elseif(CMAKE_HOST_UNIX)
         string(APPEND build "system = 'linux'\n")
     else()
         set(build_unknown TRUE)
@@ -237,7 +245,7 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
         set(host_unkown TRUE)
     endif()
 
-    set(host "[host_machine]\n") # host=target in vcpkg. 
+    set(host "[host_machine]\n") # host=target in vcpkg.
     string(APPEND host "endian = 'little'\n")
     if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_TARGET_IS_MINGW OR VCPKG_TARGET_IS_UWP)
         set(meson_system_name "windows")
@@ -252,8 +260,8 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
     endif()
 
     if(NOT build_cpu_fam MATCHES "${host_cpu_fam}"
-       OR VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS OR VCPKG_TARGET_IS_UWP
-       OR (VCPKG_TARGET_IS_MINGW AND NOT WIN32))
+       OR VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS OR VCPKG_TARGET_IS_WATCHOS OR VCPKG_TARGET_IS_TVOS OR VCPKG_TARGET_IS_VISIONOS OR VCPKG_TARGET_IS_UWP
+       OR (VCPKG_TARGET_IS_MINGW AND NOT CMAKE_HOST_WIN32))
         set(${is_cross} TRUE PARENT_SCOPE)
     endif()
 endfunction()

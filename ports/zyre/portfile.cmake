@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO zeromq/zyre
-    REF 1b5962436c3e32705cb7f07cf1b83ff49770abb7
-    SHA512 d460a29ec72b38e98187ed45422da43433b5fd337a295f3ca9df3d350f0d8bf9de85cfcb84fd54fc6818fe778ee0ba12e84aee62a015b6e9d0396a534cb1b9aa
+    REF f2fd7252322b1b52be248b9ef96f8981de3b86ff
+    SHA512 64502b4d1ca4296eb979a67f6058a80e931bb6db0cb29b94f6cb3285efe9a216e0014ea379a4018004f9354369bb98e5160474263568a825842e1e4d83a74225
     HEAD_REF master
 )
 
@@ -60,6 +60,6 @@ if(ZYRE_BUILD_STATIC)
 endif()
 
 # Handle copyright
-configure_file("${SOURCE_PATH}/LICENSE" "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" COPYONLY)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 
 vcpkg_fixup_pkgconfig()

@@ -5,7 +5,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO biojppm/rapidyaml
     REF "v${VERSION}"
-    SHA512 861f1d2c39c5c8d455e8d40e3ecadd828b948c5dea2bcb88ba92686ca77b9a7d69ab2d94407732eab574e4e3c7b319d0f1b31250b18fb513310847192623a2f7
+    SHA512 e0dd2409e08e556c65fb906de546c1012627aea97a36964d65a1265e7c2465bee1d7dceafebb843ae294a348f8c5fe7b6887e7ddffbc1b1eb419e924d94b41fa
     HEAD_REF master
     PATCHES cmake-fix.patch
 )
@@ -58,7 +58,7 @@ file(RENAME "${CURRENT_PACKAGES_DIR}/include/ryml_std.hpp" "${CURRENT_PACKAGES_D
 file(RENAME "${CURRENT_PACKAGES_DIR}/include/ryml.natvis" "${CURRENT_PACKAGES_DIR}/include/ryml/ryml.natvis")
 
 # Fix paths in headers file
-vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/ryml/ryml.hpp" "./c4" "../c4")
+vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/ryml/ryml.hpp" "./c4" "../c4" IGNORE_UNCHANGED)
 vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/include/ryml/ryml_std.hpp" "./c4" "../c4")
 
 # Fix paths in config file

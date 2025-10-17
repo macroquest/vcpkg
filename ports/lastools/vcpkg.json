@@ -1,6 +1,6 @@
 {
   "name": "lastools",
-  "version": "2.0.2+20230206",
+  "version": "2.0.3",
   "port-version": 1,
   "description": "LAStools: award-winning software for efficient LiDAR processing (with LASzip)",
   "homepage": "https://github.com/LAStools/LAStools",
@@ -14,5 +14,10 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ]
+  ],
+  "features": {
+    "tools": {
+      "description": "Build tools"
+    }
+  }
 }
