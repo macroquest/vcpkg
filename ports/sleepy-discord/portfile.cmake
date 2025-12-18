@@ -9,9 +9,9 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO yourWaifu/sleepy-discord
-    REF 70b9ec13427ea68de6f4213e9dfec6129fbab21b
-    SHA512 c91fbb9a672257c63ee83b40b62961b89568ca33081048b440876c390a2a2e11c602aaf43a6c9485fd85a91248f34a70d7b9ea769d0cfcd4b35b80d58a6ad737
-    HEAD_REF develop
+    REF 13455925f9e122c8898c6d6407e9ff7624dd0a17
+    SHA512 ebb5d7e5b517fd03554dfeecfb369c33544dce2605e4bb73512dd5b12ff4a393dfa7d19e7002b129841b6b7bb3eab404cfee1d3b58a08e3b591a2625ddc708d6
+    HEAD_REF master
     PATCHES
         MQ2Discord-0001-Rate-Limit-Check.patch
         fix-messing-header.patch
