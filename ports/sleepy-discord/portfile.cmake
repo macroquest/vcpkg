@@ -15,6 +15,7 @@ vcpkg_from_github(
     PATCHES
         MQ2Discord-0001-Rate-Limit-Check.patch
         fix-messing-header.patch
+        fix-cpp20-error.patch
 )
 
 # Handle version data here to prevent issues from doing this twice in parallel
